@@ -1,0 +1,107 @@
+{
+    "name": "netsuite-utilities",
+    "displayName": "NetSuite Utilities",
+    "version": "0.0.1",
+    "description": "A browser extension that enhances NetSuite with a SuiteQL editor, script log viewer, and productivity tools",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/bernsteinmatt/netsuite-utilities.git"
+    },
+    "author": "Matthew Bernstein",
+    "contributors": [
+        "mattbernstein"
+    ],
+    "scripts": {
+        "dev": "plasmo dev",
+        "build": "plasmo build",
+        "package": "plasmo package",
+        "postinstall": "node scripts/patch.js",
+        "prepare": "husky",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "format": "prettier --write .",
+        "typecheck": "tsc --noEmit"
+    },
+    "lint-staged": {
+        "*.{ts,tsx}": [
+            "eslint --fix",
+            "prettier --write"
+        ],
+        "*.{json,css,md}": [
+            "prettier --write"
+        ]
+    },
+    "dependencies": {
+        "@codemirror/lang-sql": "^6.10.0",
+        "@codemirror/theme-one-dark": "^6.1.3",
+        "@codemirror/view": "^6.39.4",
+        "@plasmohq/messaging": "^0.7.2",
+        "@plasmohq/storage": "^1.15.0",
+        "@radix-ui/react-dialog": "^1.1.15",
+        "@radix-ui/react-dropdown-menu": "^2.1.16",
+        "@radix-ui/react-label": "^2.1.8",
+        "@radix-ui/react-popover": "^1.1.15",
+        "@radix-ui/react-select": "^2.2.6",
+        "@radix-ui/react-separator": "^1.1.8",
+        "@radix-ui/react-slot": "^1.2.4",
+        "@radix-ui/react-switch": "^1.2.6",
+        "@tailwindcss/postcss": "^4.1.18",
+        "@tanstack/react-virtual": "^3.13.13",
+        "@uiw/react-codemirror": "^4.25.4",
+        "ag-grid-community": "^33.3.2",
+        "ag-grid-react": "^33.3.2",
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "cmdk": "^1.1.1",
+        "lucide-react": "^0.561.0",
+        "plasmo": "^0.90.5",
+        "react": "^19.2.3",
+        "react-dom": "^19.2.3",
+        "react-resizable-panels": "^3.0.6",
+        "sql-formatter": "^15.6.12",
+        "tailwind-merge": "^3.4.0",
+        "tailwindcss": "^4.1.18"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.39.2",
+        "@ianvs/prettier-plugin-sort-imports": "^4.7.0",
+        "@types/chrome": "0.0.258",
+        "@types/node": "24.10.4",
+        "@types/react": "^19.2.7",
+        "@types/react-dom": "^19.2.3",
+        "eslint": "^9.39.2",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-react": "^7.37.5",
+        "eslint-plugin-react-hooks": "^7.0.1",
+        "husky": "^9.1.7",
+        "lint-staged": "^16.2.7",
+        "postcss": "^8.5.6",
+        "prettier": "^3.6.2",
+        "prettier-plugin-tailwindcss": "^0.7.2",
+        "typescript": "^5.9.3",
+        "typescript-eslint": "^8.50.0"
+    },
+    "manifest": {
+        "host_permissions": [
+            "https://*/*"
+        ],
+        "permissions": [
+            "tabs",
+            "scripting"
+        ],
+        "browser_specific_settings": {
+            "gecko": {
+                "id": "ab7ba470-8e54-465e-825c-99712043e09d"
+            }
+        }
+    },
+    "alias": {
+        "node:module": false,
+        "node:fs": false,
+        "node:path": false,
+        "node:url": false,
+        "node:util": false
+    },
+    "packageManager": "pnpm@10.14.0+sha512.ad27a79641b49c3e481a16a805baa71817a04bbe06a38d17e60e2eaee83f6a146c6a688125f5792e48dd5ba30e7da52a5cda4c3992b9ccf333f9ce223af84748"
+}

@@ -1,0 +1,219 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap")
+layer(base);
+
+@import "tailwindcss" prefix(plasmo);
+
+@theme {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+}
+
+@custom-variant dark (&:is(.dark *, .dark-grey *));
+
+:root {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --chart-1: oklch(0.488 0.243 264.376);
+    --chart-2: oklch(0.696 0.17 162.48);
+    --chart-3: oklch(0.769 0.188 70.08);
+    --chart-4: oklch(0.627 0.265 303.9);
+    --chart-5: oklch(0.645 0.246 16.439);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+}
+
+.light {
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+    --chart-1: oklch(0.646 0.222 41.116);
+    --chart-2: oklch(0.6 0.118 184.704);
+    --chart-3: oklch(0.398 0.07 227.392);
+    --chart-4: oklch(0.828 0.189 84.429);
+    --chart-5: oklch(0.769 0.188 70.08);
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --chart-1: oklch(0.488 0.243 264.376);
+    --chart-2: oklch(0.696 0.17 162.48);
+    --chart-3: oklch(0.769 0.188 70.08);
+    --chart-4: oklch(0.627 0.265 303.9);
+    --chart-5: oklch(0.645 0.246 16.439);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+}
+
+.dark-grey {
+    --background: oklch(0.25 0 0);
+    --foreground: oklch(0.95 0 0);
+    --card: oklch(0.3 0 0);
+    --card-foreground: oklch(0.95 0 0);
+    --popover: oklch(0.3 0 0);
+    --popover-foreground: oklch(0.95 0 0);
+    --primary: oklch(0.85 0 0);
+    --primary-foreground: oklch(0.25 0 0);
+    --secondary: oklch(0.35 0 0);
+    --secondary-foreground: oklch(0.95 0 0);
+    --muted: oklch(0.35 0 0);
+    --muted-foreground: oklch(0.65 0 0);
+    --accent: oklch(0.35 0 0);
+    --accent-foreground: oklch(0.95 0 0);
+    --destructive: oklch(0.65 0.18 20);
+    --border: oklch(0.95 0 0 / 12%);
+    --input: oklch(0.95 0 0 / 18%);
+    --ring: oklch(0.5 0 0);
+    --chart-1: oklch(0.55 0.22 250);
+    --chart-2: oklch(0.65 0.16 170);
+    --chart-3: oklch(0.7 0.18 80);
+    --chart-4: oklch(0.6 0.24 300);
+    --chart-5: oklch(0.62 0.23 25);
+    --sidebar: oklch(0.28 0 0);
+    --sidebar-foreground: oklch(0.95 0 0);
+    --sidebar-primary: oklch(0.55 0.22 250);
+    --sidebar-primary-foreground: oklch(0.95 0 0);
+    --sidebar-accent: oklch(0.35 0 0);
+    --sidebar-accent-foreground: oklch(0.95 0 0);
+    --sidebar-border: oklch(0.95 0 0 / 12%);
+    --sidebar-ring: oklch(0.5 0 0);
+}
+
+#plasmo-shadow-container {
+    all: initial;
+    box-sizing: border-box;
+}
+
+/* Override NetSuite form input styles */
+#plasmo-shadow-container input[type="text"],
+#plasmo-shadow-container input[type="password"],
+#plasmo-shadow-container input[type="datetime-local"],
+#plasmo-shadow-container select,
+#plasmo-shadow-container textarea {
+    color: unset !important;
+    font-size: unset !important;
+    border: unset !important;
+    padding: unset !important;
+    box-shadow: unset !important;
+}
+
+#plasmo-shadow-container input[type="text"]:enabled:active,
+#plasmo-shadow-container input[type="text"]:enabled:focus,
+#plasmo-shadow-container input[type="password"]:enabled:active,
+#plasmo-shadow-container input[type="password"]:enabled:focus,
+#plasmo-shadow-container input[type="datetime-local"]:enabled:active,
+#plasmo-shadow-container input[type="datetime-local"]:enabled:focus,
+#plasmo-shadow-container select:enabled:active,
+#plasmo-shadow-container select:enabled:focus,
+#plasmo-shadow-container textarea:enabled:active,
+#plasmo-shadow-container textarea:enabled:focus {
+    border: unset !important;
+    box-shadow: unset !important;
+}
+
+/* Override NetSuite styles in Radix portals (popovers, dialogs, dropdowns) */
+[data-radix-popper-content-wrapper] input[type="text"],
+[data-radix-popper-content-wrapper] input[type="password"],
+[data-radix-popper-content-wrapper] select,
+[data-radix-popper-content-wrapper] textarea {
+    color: unset !important;
+    font-size: unset !important;
+    border: unset !important;
+    padding: unset !important;
+    box-shadow: unset !important;
+}
+
+[data-radix-popper-content-wrapper] input[type="text"]:enabled:active,
+[data-radix-popper-content-wrapper] input[type="text"]:enabled:focus,
+[data-radix-popper-content-wrapper] input[type="password"]:enabled:active,
+[data-radix-popper-content-wrapper] input[type="password"]:enabled:focus,
+[data-radix-popper-content-wrapper] select:enabled:active,
+[data-radix-popper-content-wrapper] select:enabled:focus,
+[data-radix-popper-content-wrapper] textarea:enabled:active,
+[data-radix-popper-content-wrapper] textarea:enabled:focus {
+    border: unset !important;
+    box-shadow: unset !important;
+}

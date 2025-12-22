@@ -84,7 +84,9 @@
     },
     "manifest": {
         "host_permissions": [
-            "https://*/*"
+            "https://*.app.netsuite.com/*",
+            "https://*.netsuite.com/*",
+            "http://localhost:5173/*"
         ],
         "permissions": [
             "tabs",

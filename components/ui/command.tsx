@@ -31,12 +31,16 @@ function CommandDialog({
     children,
     className,
     showCloseButton = true,
+    filter,
+    shouldFilter,
     ...props
 }: React.ComponentProps<typeof Dialog> & {
     title?: string;
     description?: string;
     className?: string;
     showCloseButton?: boolean;
+    filter?: React.ComponentProps<typeof CommandPrimitive>["filter"];
+    shouldFilter?: boolean;
 }) {
     return (
         <Dialog {...props}>
@@ -48,7 +52,11 @@ function CommandDialog({
                 className={cn("plasmo:overflow-hidden plasmo:p-0!", className)}
                 showCloseButton={showCloseButton}
             >
-                <Command className="plasmo:[&_[cmdk-group-heading]]:text-muted-foreground plasmo:**:data-[slot=command-input-wrapper]:h-12 plasmo:[&_[cmdk-group-heading]]:px-2! plasmo:[&_[cmdk-group-heading]]:font-medium plasmo:[&_[cmdk-group]]:px-2! plasmo:[&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 plasmo:[&_[cmdk-input-wrapper]_svg]:h-5 plasmo:[&_[cmdk-input-wrapper]_svg]:w-5 plasmo:[&_[cmdk-input]]:h-12 plasmo:[&_[cmdk-item]]:px-2! plasmo:[&_[cmdk-item]]:py-3! plasmo:[&_[cmdk-item]_svg]:h-5 plasmo:[&_[cmdk-item]_svg]:w-5">
+                <Command
+                    filter={filter}
+                    shouldFilter={shouldFilter}
+                    className="plasmo:[&_[cmdk-group-heading]]:text-muted-foreground plasmo:**:data-[slot=command-input-wrapper]:h-12 plasmo:[&_[cmdk-group-heading]]:px-2! plasmo:[&_[cmdk-group-heading]]:font-medium plasmo:[&_[cmdk-group]]:px-2! plasmo:[&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 plasmo:[&_[cmdk-input-wrapper]_svg]:h-5 plasmo:[&_[cmdk-input-wrapper]_svg]:w-5 plasmo:[&_[cmdk-input]]:h-12 plasmo:[&_[cmdk-item]]:px-2! plasmo:[&_[cmdk-item]]:py-3! plasmo:[&_[cmdk-item]_svg]:h-5 plasmo:[&_[cmdk-item]_svg]:w-5"
+                >
                     {children}
                 </Command>
             </DialogContent>
@@ -63,7 +71,7 @@ function CommandInput({
     return (
         <div
             data-slot="command-input-wrapper"
-            className="plasmo:flex plasmo:h-9 plasmo:items-center plasmo:gap-2 plasmo:border-b plasmo:px-3!"
+            className="plasmo:flex plasmo:flex-1 plasmo:h-9 plasmo:items-center plasmo:gap-2 plasmo:border-b plasmo:px-3!"
         >
             <SearchIcon className="plasmo:size-4 plasmo:shrink-0 plasmo:opacity-50" />
             <CommandPrimitive.Input
@@ -156,6 +164,19 @@ function CommandShortcut({ className, ...props }: React.ComponentProps<"span">) 
     );
 }
 
+function CommandLoading({
+    className,
+    ...props
+}: React.ComponentProps<typeof CommandPrimitive.Loading>) {
+    return (
+        <CommandPrimitive.Loading
+            data-slot="command-loading"
+            className={cn("plasmo:py-6! plasmo:text-center plasmo:text-sm", className)}
+            {...props}
+        />
+    );
+}
+
 export {
     Command,
     CommandDialog,
@@ -166,4 +187,5 @@ export {
     CommandItem,
     CommandShortcut,
     CommandSeparator,
+    CommandLoading,
 };

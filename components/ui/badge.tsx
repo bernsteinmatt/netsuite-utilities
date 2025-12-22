@@ -9,18 +9,19 @@ const badgeVariants = cva(
         variants: {
             variant: {
                 default:
-                    "plasmo:border-transparent plasmo:bg-primary plasmo:text-primary-foreground plasmo:[a&]:hover:bg-primary/90",
+                    "plasmo:border-transparent plasmo:bg-primary plasmo:text-primary-foreground! plasmo:[a&]:hover:bg-primary/90",
                 secondary:
-                    "plasmo:border-transparent plasmo:bg-secondary plasmo:text-secondary-foreground plasmo:[a&]:hover:bg-secondary/90",
+                    "plasmo:border-transparent plasmo:bg-secondary plasmo:text-secondary-foreground! plasmo:[a&]:hover:bg-secondary/90",
                 destructive:
-                    "plasmo:border-transparent plasmo:bg-destructive plasmo:text-white plasmo:[a&]:hover:bg-destructive/90 plasmo:focus-visible:ring-destructive/20 plasmo:dark:focus-visible:ring-destructive/40 plasmo:dark:bg-destructive/60",
+                    "plasmo:border-transparent plasmo:bg-destructive plasmo:text-white! plasmo:[a&]:hover:bg-destructive/90 plasmo:focus-visible:ring-destructive/20 plasmo:dark:focus-visible:ring-destructive/40 plasmo:dark:bg-destructive/60",
                 outline:
-                    "plasmo:text-foreground plasmo:[a&]:hover:bg-accent plasmo:[a&]:hover:text-accent-foreground",
+                    "plasmo:text-foreground! plasmo:[a&]:hover:bg-accent plasmo:[a&]:hover:text-accent-foreground!",
             },
             size: {
                 default:
                     "plasmo:px-2 plasmo:py-0.5 plasmo:text-xs plasmo:gap-1 plasmo:[&>svg]:size-3",
                 sm: "plasmo:px-1.5 plasmo:py-0 plasmo:text-xs plasmo:gap-0.5 plasmo:[&>svg]:size-2.5",
+                md: "plasmo:px-2 plasmo:py-0 plasmo:text-base plasmo:gap-0.5 plasmo:[&>svg]:size-2.5",
             },
         },
         defaultVariants: {

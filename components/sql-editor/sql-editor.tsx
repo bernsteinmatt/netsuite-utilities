@@ -20,7 +20,7 @@ import { oneDark } from "@codemirror/theme-one-dark";
 import CodeMirror, { type ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import clsx from "clsx";
 import { Database, Moon, Play, Plus, Sun, X } from "lucide-react";
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { format as sqlFormat } from "sql-formatter";
 
 import { darkGreyTheme, lightTheme } from "~lib/codemirror-themes";
@@ -101,12 +101,29 @@ const loadState = () => {
     }
 };
 
+// Constants for storage limits
+const MAX_STORED_TABS = 20;
+const MAX_QUERY_LENGTH = 50000; // ~50KB per query
+
 // Helper: save the current tabs (only id, name, and query) to local storage.
-const saveState = (tabs: QueryTab[], activeTabId) => {
-    // Only persist id, name, and query.
-    const storedTabs = tabs.map(({ id, name, query }) => ({ id, name, query }));
+const saveState = (tabs: QueryTab[], activeTabId: string) => {
+    // Only persist id, name, and query, with limits
+    const storedTabs = tabs
+        .slice(0, MAX_STORED_TABS)
+        .map(({ id, name, query }) => ({
+            id,
+            name,
+            query: query.slice(0, MAX_QUERY_LENGTH),
+        }));
     const state = { tabs: storedTabs, activeTabId };
-    localStorage.setItem(LOCAL_QUERIES_KEY, JSON.stringify(state));
+    try {
+        localStorage.setItem(LOCAL_QUERIES_KEY, JSON.stringify(state));
+    } catch (e) {
+        if (e instanceof DOMException && e.name === "QuotaExceededError") {
+            console.warn("localStorage quota exceeded, clearing saved queries");
+            localStorage.removeItem(LOCAL_QUERIES_KEY);
+        }
+    }
 };
 
 interface SqlEditorProps {
@@ -115,33 +132,7 @@ interface SqlEditorProps {
 
 export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
     const storedState = useMemo(() => loadState(), []);
-    const containerRef = useRef<HTMLDivElement>(null);
     const editorRef = useRef<ReactCodeMirrorRef>(null);
-
-    // Create a portal container div for popovers
-    useEffect(() => {
-        if (containerRef.current) {
-            // Create a div inside our component to serve as the portal container
-            const portalDiv = document.createElement("div");
-            portalDiv.id = "radix-portal-container";
-            portalDiv.style.position = "fixed";
-            portalDiv.style.top = "0";
-            portalDiv.style.left = "0";
-            portalDiv.style.zIndex = "10001";
-            portalDiv.style.pointerEvents = "none";
-            portalDiv.style.width = "100vw";
-            portalDiv.style.height = "100vh";
-
-            // Append to our container
-            containerRef.current.appendChild(portalDiv);
-
-            return () => {
-                if (portalDiv.parentNode) {
-                    portalDiv.parentNode.removeChild(portalDiv);
-                }
-            };
-        }
-    }, []);
 
     const [tabs, setTabs] = useState<QueryTab[]>(() => {
         if (storedState && storedState.tabs.length > 0) {
@@ -329,7 +320,6 @@ export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
 
     return (
         <div
-            ref={containerRef}
             className="plasmo:bg-background plasmo:text-foreground plasmo:z-1001 plasmo:flex plasmo:flex-col"
             style={{ height: "calc(100vh - 2vh)", width: "calc(100vw - 2vw)" }}
         >
@@ -377,8 +367,10 @@ export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
                                 }
                             >
                                 {tabs.map((tab) => (
-                                    <button
+                                    <div
                                         key={tab.id}
+                                        role="tab"
+                                        tabIndex={0}
                                         className={clsx(
                                             `plasmo:group plasmo:flex plasmo:cursor-pointer plasmo:items-center plasmo:gap-1 plasmo:rounded-lg plasmo:whitespace-nowrap plasmo:transition-colors plasmo:border-2 plasmo:border-solid`,
                                             activeTabId === tab.id
@@ -387,6 +379,12 @@ export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
                                             tabs.length > 1 ? "plasmo:px-2!" : "plasmo:px-4!"
                                         )}
                                         onClick={() => setActiveTabId(tab.id)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter" || e.key === " ") {
+                                                e.preventDefault();
+                                                setActiveTabId(tab.id);
+                                            }
+                                        }}
                                     >
                                         <div className="plasmo:text-sm plasmo:py-2!">
                                             {tab.name}
@@ -409,7 +407,7 @@ export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
                                                 <X className="plasmo:size-4" />
                                             </Button>
                                         )}
-                                    </button>
+                                    </div>
                                 ))}
                                 <Button
                                     variant="outline"
@@ -444,7 +442,7 @@ export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
                                         <SelectTrigger>
                                             <SelectValue placeholder="Format" />
                                         </SelectTrigger>
-                                        <SelectContent container={containerRef.current}>
+                                        <SelectContent >
                                             <SelectGroup className={"plasmo:py-1!"}>
                                                 {VIEW_TYPES.map((item) => {
                                                     return (

@@ -1,4 +1,9 @@
+
+
+
 import "~style.css";
+
+
 
 import { ThemeSelector } from "@/components/theme-selector";
 import { Switch } from "@/components/ui/switch";
@@ -6,8 +11,14 @@ import { cn } from "@/lib/utils";
 import { ArrowLeft, Database, FileText, Settings } from "lucide-react";
 import { useState } from "react";
 
+
+
 import { ThemeProvider } from "~lib/contexts/theme-context";
 import { useStorageBoolean } from "~lib/hooks/use-storage-boolean";
+
+
+
+
 
 const PopupContent = () => {
     const [view, setView] = useState<"main" | "settings">("main");
@@ -51,6 +62,11 @@ const PopupContent = () => {
         defaultValue: true,
     });
 
+    const [commandSearchEnabled, setCommandSearchEnabled] = useStorageBoolean({
+        key: "feature_command_search",
+        defaultValue: true,
+    });
+
     const handleOpenSqlEditor = () => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const tab = tabs[0];
@@ -71,6 +87,14 @@ const PopupContent = () => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const tab = tabs[0];
             chrome.tabs.sendMessage(tab.id, { action: "OPEN_SCRIPT_LOG_VIEWER" });
+            window.close();
+        });
+    };
+
+    const handleOpenCommandSearch = () => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            const tab = tabs[0];
+            chrome.tabs.sendMessage(tab.id, { action: "OPEN_COMMAND_SEARCH" });
             window.close();
         });
     };
@@ -111,6 +135,12 @@ const PopupContent = () => {
                             <span>Script Log Viewer</span>
                         </button>
                     )}
+                    {commandSearchEnabled && (
+                        <button onClick={handleOpenCommandSearch} className={mainItemClassName}>
+                            <FileText size={18} />
+                            <span>Command Search</span>
+                        </button>
+                    )}
                     {loadConsoleModulesEnabled && (
                         <button onClick={handleLoadConsoleModules} className={mainItemClassName}>
                             <span className="plasmo:font-bold plasmo:flex plasmo:items-center plasmo:justify-center plasmo:w-[18px] plasmo:h-[18px]">
@@ -128,6 +158,11 @@ const PopupContent = () => {
         {
             title: "Tools",
             features: [
+                {
+                    label: "Command Search",
+                    value: commandSearchEnabled,
+                    setValue: setCommandSearchEnabled,
+                },
                 {
                     label: "SuiteQL Editor",
                     value: suiteQLEditorEnabled,

@@ -5,13 +5,16 @@ import cssText from "data-text:@/style.css";
 import type { PlasmoCSConfig, PlasmoGetRootContainer } from "plasmo";
 import { useEffect, useRef, useState } from "react";
 
-import { CommandSearch, type ToolType } from "~components/command-search/command-search";
+import { CommandSearch } from "~components/command-search/command-search";
 import { RecordDetail } from "~components/record-detail/record-detail";
-import { TOOL_SHORTCUTS } from "~lib/constants";
+import { TOOL_SHORTCUTS, type ToolType } from "~lib/constants";
 import { ThemeProvider } from "~lib/contexts/theme-context";
 
 export const config: PlasmoCSConfig = {
-    matches: ["*://*.netsuite.com/*", "http://localhost:5173/*"],
+    matches: [
+        "*://*.netsuite.com/*",
+        // "http://localhost:5173/*",
+    ],
 };
 
 type ActiveView = "none" | "sql-editor" | "script-log-viewer" | "command-search" | "record-detail";

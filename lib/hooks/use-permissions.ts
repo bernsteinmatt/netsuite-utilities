@@ -6,17 +6,14 @@ import {
     hasPermission,
     PermissionLevel,
     type Permissions,
-} from "~lib/fetch-query";
+} from "~lib/netsuite";
 
 interface UsePermissionsReturn {
     permissions: Permissions | null;
     isLoading: boolean;
     error: string | null;
     getPermission: (permissionId: string) => PermissionLevel;
-    hasPermission: (
-        permissionId: string,
-        requiredLevel?: PermissionLevel
-    ) => boolean;
+    hasPermission: (permissionId: string, requiredLevel?: PermissionLevel) => boolean;
 }
 
 export const usePermissions = (): UsePermissionsReturn => {
@@ -40,8 +37,7 @@ export const usePermissions = (): UsePermissionsReturn => {
         permissions,
         isLoading,
         error,
-        getPermission: (permissionId: string) =>
-            getPermission(permissions, permissionId),
+        getPermission: (permissionId: string) => getPermission(permissions, permissionId),
         hasPermission: (
             permissionId: string,
             requiredLevel: PermissionLevel = PermissionLevel.VIEW

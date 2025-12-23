@@ -17,8 +17,8 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useTheme } from "~lib/contexts/theme-context";
-import { executeQuery } from "~lib/fetch-query";
 import { isNetSuite } from "~lib/is-netsuite";
+import { executeQuery } from "~lib/netsuite";
 
 import { LOCAL_STORAGE_KEY } from "./constants";
 import { LogRow } from "./log-row";

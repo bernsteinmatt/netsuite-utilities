@@ -85,8 +85,7 @@
     "manifest": {
         "host_permissions": [
             "https://*.app.netsuite.com/*",
-            "https://*.netsuite.com/*",
-            "http://localhost:5173/*"
+            "https://*.netsuite.com/*"
         ],
         "permissions": [
             "scripting"

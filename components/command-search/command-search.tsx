@@ -1,19 +1,38 @@
 import { Badge } from "@/components/ui/badge";
-import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandLoading, CommandSeparator } from "@/components/ui/command";
+import {
+    CommandDialog,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+    CommandLoading,
+    CommandSeparator,
+} from "@/components/ui/command";
 import { Code, ExternalLink, FileBraces, FileText, List, ScrollText, Terminal } from "lucide-react";
 import * as React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-
-
 import { Kbd, KbdGroup } from "~components/ui/kbd";
 import { Spinner } from "~components/ui/spinner";
 import { TOOL_SHORTCUTS, type ToolType } from "~lib/constants";
-import { buildUberSearchUrl, escapeSqlString, fetchAutosuggest, fetchCustomRecordTypes, fetchNavMenuData, fetchPermissions, fetchQuery, getSearchableCustomRecordTypes, resolveRecordUrl, searchCustomRecordInstances, type AutosuggestResult, type CustomRecordInstance, type CustomRecordType, type FlatNavMenuItem, type Permissions } from "~lib/fetch-query";
-
-
-
-
+import {
+    buildUberSearchUrl,
+    escapeSqlString,
+    fetchAutosuggest,
+    fetchCustomRecordTypes,
+    fetchNavMenuData,
+    fetchPermissions,
+    fetchQuery,
+    getSearchableCustomRecordTypes,
+    resolveRecordUrl,
+    searchCustomRecordInstances,
+    type AutosuggestResult,
+    type CustomRecordInstance,
+    type CustomRecordType,
+    type FlatNavMenuItem,
+    type Permissions,
+} from "~lib/netsuite";
 
 const isDev = process.env.NODE_ENV === "development";
 const devLog = (...args: unknown[]) => {

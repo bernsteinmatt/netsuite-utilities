@@ -6,6 +6,27 @@ Built with [Plasmo](https://docs.plasmo.com/), React, and TypeScript.
 
 ## Features
 
+### Command Search
+
+A powerful command palette for quickly navigating NetSuite. Press `Ctrl/Cmd + Shift + K` to open.
+
+- **Universal search** - Search across customers, vendors, employees, transactions, scripts, custom records, and more
+- **Smart prefixes** - Use prefixes like `cus:`, `ven:`, `emp:`, `tran:`, `script:`, `cr:` (custom records), `cl:` (custom lists) to filter results
+- **Navigation search** - Search NetSuite menu items with `nav:` prefix
+- **Quick access to tools** - Launch SuiteQL Editor, Script Log Viewer, Record Detail, and Module Loader directly from the command palette
+- **Custom record instance search** - Search within custom record data based on your permissions
+- **Autosuggest integration** - Leverages NetSuite's native search for additional results
+
+### Record Detail (JSON Viewer)
+
+View any NetSuite record as structured JSON. Press `Ctrl/Cmd + Shift + E` while on a record page.
+
+- **Collapsible tree view** - Navigate through body fields and line items with expand/collapse controls
+- **Search & filter** - Filter fields by name or value with highlighted matches
+- **Copy to clipboard** - Copy the entire record or individual sections as JSON
+- **Records Catalog link** - Quick link to the record type documentation in NetSuite's Records Catalog
+- **Expand/Collapse all** - Quickly expand or collapse all nodes
+
 ### SuiteQL Editor
 
 A full-featured SQL editor for executing SuiteQL queries directly against NetSuite:
@@ -16,10 +37,7 @@ A full-featured SQL editor for executing SuiteQL queries directly against NetSui
 - **Schema caching** - fetch and cache NetSuite record catalog for reference
 - **Query formatting** with sql-formatter
 
-**Keyboard shortcuts:**
-- `Ctrl/Cmd + Shift + Enter` - Run query
-- `Ctrl/Cmd + Shift + F` - Format SQL
-- `Esc` - Close editor
+**Keyboard shortcut:** `Ctrl/Cmd + Shift + U`
 
 ### Script Log Viewer
 
@@ -30,9 +48,13 @@ Browse and filter SuiteScript execution logs with advanced filtering:
 - Virtual scrolling for large datasets
 - Expandable log entries
 
-**Keyboard shortcuts:**
-- `Ctrl/Cmd + Enter` - Refresh logs
-- `Esc` - Close viewer
+**Keyboard shortcut:** `Ctrl/Cmd + Shift + L`
+
+### SuiteScript Module Loader
+
+Load NetSuite modules into the browser console for testing and debugging.
+
+**Keyboard shortcut:** `Ctrl/Cmd + Shift + M`
 
 ### Role & Account Search
 
@@ -46,9 +68,15 @@ Browse and filter SuiteScript execution logs with advanced filtering:
 - Global search keyboard shortcut
 - Dark/Light theme selector
 
-### SuiteScript Module Loader
+## Keyboard Shortcuts
 
-Load NetSuite modules into the browser console for testing and debugging.
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/Cmd + Shift + K` | Open Command Search |
+| `Ctrl/Cmd + Shift + U` | Open SuiteQL Editor |
+| `Ctrl/Cmd + Shift + L` | Open Script Log Viewer |
+| `Ctrl/Cmd + Shift + E` | Open Record Detail (JSON) |
+| `Ctrl/Cmd + Shift + M` | Load NetSuite Modules |
 
 ## Installation
 

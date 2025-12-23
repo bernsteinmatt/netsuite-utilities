@@ -26,9 +26,9 @@ import { format as sqlFormat } from "sql-formatter";
 import { darkGreyTheme, lightTheme } from "~lib/codemirror-themes";
 import { LOCAL_QUERIES_KEY } from "~lib/constants";
 import { useTheme } from "~lib/contexts/theme-context";
-import { executeQuery } from "~lib/fetch-query";
 import { isNetSuite } from "~lib/is-netsuite";
 import { mergeReducer } from "~lib/merge-reducer";
+import { executeQuery } from "~lib/netsuite";
 import { formatTime } from "~lib/util";
 
 import { DataContent } from "./data-content";
@@ -108,13 +108,11 @@ const MAX_QUERY_LENGTH = 50000; // ~50KB per query
 // Helper: save the current tabs (only id, name, and query) to local storage.
 const saveState = (tabs: QueryTab[], activeTabId: string) => {
     // Only persist id, name, and query, with limits
-    const storedTabs = tabs
-        .slice(0, MAX_STORED_TABS)
-        .map(({ id, name, query }) => ({
-            id,
-            name,
-            query: query.slice(0, MAX_QUERY_LENGTH),
-        }));
+    const storedTabs = tabs.slice(0, MAX_STORED_TABS).map(({ id, name, query }) => ({
+        id,
+        name,
+        query: query.slice(0, MAX_QUERY_LENGTH),
+    }));
     const state = { tabs: storedTabs, activeTabId };
     try {
         localStorage.setItem(LOCAL_QUERIES_KEY, JSON.stringify(state));
@@ -442,7 +440,7 @@ export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
                                         <SelectTrigger>
                                             <SelectValue placeholder="Format" />
                                         </SelectTrigger>
-                                        <SelectContent >
+                                        <SelectContent>
                                             <SelectGroup className={"plasmo:py-1!"}>
                                                 {VIEW_TYPES.map((item) => {
                                                     return (

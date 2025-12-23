@@ -44,3 +44,5 @@ keys.json
 
 .idea
 .bolt
+
+tsconfig.tsbuildinfo

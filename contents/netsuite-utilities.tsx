@@ -5,18 +5,16 @@ import cssText from "data-text:@/style.css";
 import type { PlasmoCSConfig, PlasmoGetRootContainer } from "plasmo";
 import { useEffect, useRef, useState } from "react";
 
-import {
-    CommandSearch,
-    TOOL_SHORTCUTS,
-    type ToolType,
-} from "~components/command-search/command-search";
+import { CommandSearch, type ToolType } from "~components/command-search/command-search";
+import { RecordDetail } from "~components/record-detail/record-detail";
+import { TOOL_SHORTCUTS } from "~lib/constants";
 import { ThemeProvider } from "~lib/contexts/theme-context";
 
 export const config: PlasmoCSConfig = {
     matches: ["*://*.netsuite.com/*", "http://localhost:5173/*"],
 };
 
-type ActiveView = "none" | "sql-editor" | "script-log-viewer" | "command-search";
+type ActiveView = "none" | "sql-editor" | "script-log-viewer" | "command-search" | "record-detail";
 
 /**
  * Mount the content script directly to the page's DOM instead of using Shadow DOM.
@@ -48,6 +46,10 @@ const NetsuiteUtilities = () => {
     });
     const [loadConsoleModulesEnabled] = useStorageBoolean({
         key: "feature_load_console_modules",
+        defaultValue: true,
+    });
+    const [recordDetailEnabled] = useStorageBoolean({
+        key: "feature_record_detail",
         defaultValue: true,
     });
 
@@ -91,6 +93,9 @@ const NetsuiteUtilities = () => {
             } else if (key === TOOL_SHORTCUTS["load-modules"].key && loadConsoleModulesEnabled) {
                 e.preventDefault();
                 window.dispatchEvent(new CustomEvent("LOAD_NS_MODULES"));
+            } else if (key === TOOL_SHORTCUTS["record-detail"].key && recordDetailEnabled) {
+                e.preventDefault();
+                setActiveView("record-detail");
             }
         };
 
@@ -121,6 +126,9 @@ const NetsuiteUtilities = () => {
                 }
                 if (message.action === "OPEN_COMMAND_SEARCH") {
                     setActiveView("command-search");
+                }
+                if (message.action === "OPEN_RECORD_DETAIL") {
+                    setActiveView("record-detail");
                 }
                 if (message.action === "LOAD_CONSOLE_MODULES") {
                     // Dispatch custom event that the main world script will listen for
@@ -175,17 +183,18 @@ const NetsuiteUtilities = () => {
                 {activeView === "script-log-viewer" && (
                     <ScriptLogViewer setIsOpen={(open) => !open && handleClose()} />
                 )}
+                {activeView === "record-detail" && (
+                    <RecordDetail setIsOpen={(open) => !open && handleClose()} />
+                )}
                 {activeView === "command-search" && (
                     <CommandSearch
                         setIsOpen={(open) => !open && handleClose()}
                         onOpenTool={(tool: ToolType) => {
-                            if (tool === "sql-editor") {
-                                setActiveView("sql-editor");
-                            } else if (tool === "script-log-viewer") {
-                                setActiveView("script-log-viewer");
-                            } else if (tool === "load-modules") {
+                            if (tool === "load-modules") {
                                 window.dispatchEvent(new CustomEvent("LOAD_NS_MODULES"));
                                 handleClose();
+                            } else {
+                                setActiveView(tool);
                             }
                         }}
                     />

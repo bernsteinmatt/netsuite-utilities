@@ -89,7 +89,6 @@
             "http://localhost:5173/*"
         ],
         "permissions": [
-            "tabs",
             "scripting"
         ],
         "browser_specific_settings": {

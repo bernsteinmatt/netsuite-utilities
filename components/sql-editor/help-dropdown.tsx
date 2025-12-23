@@ -156,7 +156,7 @@ export const HelpDropdown = () => {
             </DropdownMenu>
 
             <Dialog open={showShortcuts} onOpenChange={setShowShortcuts}>
-                <DialogContent className="plasmo:sm:max-w-md plasmo:z-1002">
+                <DialogContent className="plasmo:sm:max-w-md plasmo:z-1002 plasmo:text-foreground">
                     <DialogHeader>
                         <DialogTitle>Keyboard Shortcuts</DialogTitle>
                     </DialogHeader>

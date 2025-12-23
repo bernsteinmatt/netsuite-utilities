@@ -15,6 +15,7 @@ const storage = new Storage();
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setTheme] = useState<Theme>("dark-grey");
+    const [isLoaded, setIsLoaded] = useState(false);
 
     // Load theme from storage on mount
     useEffect(() => {
@@ -22,6 +23,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             if (stored) {
                 setTheme(stored as Theme);
             }
+            setIsLoaded(true);
         });
     }, []);
 
@@ -50,6 +52,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const toggleTheme = () => {
         setTheme((prev) => (prev === "light" ? "dark-grey" : "light"));
     };
+
+    // Don't render children until theme is loaded to prevent flash
+    if (!isLoaded) {
+        return null;
+    }
 
     return (
         <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>

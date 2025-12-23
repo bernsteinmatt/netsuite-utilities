@@ -1,51 +1,24 @@
 import { Badge } from "@/components/ui/badge";
-import {
-    CommandDialog,
-    CommandEmpty,
-    CommandGroup,
-    CommandInput,
-    CommandItem,
-    CommandList,
-    CommandLoading,
-    CommandSeparator,
-} from "@/components/ui/command";
-import { Code, ExternalLink, FileText, List, ScrollText, Terminal } from "lucide-react";
+import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandLoading, CommandSeparator } from "@/components/ui/command";
+import { Code, ExternalLink, FileBraces, FileText, List, ScrollText, Terminal } from "lucide-react";
 import * as React from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { Spinner } from "~components/ui/spinner";
-import {
-    buildUberSearchUrl,
-    escapeSqlString,
-    fetchAutosuggest,
-    fetchCustomRecordTypes,
-    fetchNavMenuData,
-    fetchPermissions,
-    fetchQuery,
-    getSearchableCustomRecordTypes,
-    resolveRecordUrl,
-    searchCustomRecordInstances,
-    type AutosuggestResult,
-    type CustomRecordInstance,
-    type CustomRecordType,
-    type FlatNavMenuItem,
-    type Permissions,
-} from "~lib/fetch-query";
+
 
 import { Kbd, KbdGroup } from "~components/ui/kbd";
+import { Spinner } from "~components/ui/spinner";
+import { TOOL_SHORTCUTS, type ToolType } from "~lib/constants";
+import { buildUberSearchUrl, escapeSqlString, fetchAutosuggest, fetchCustomRecordTypes, fetchNavMenuData, fetchPermissions, fetchQuery, getSearchableCustomRecordTypes, resolveRecordUrl, searchCustomRecordInstances, type AutosuggestResult, type CustomRecordInstance, type CustomRecordType, type FlatNavMenuItem, type Permissions } from "~lib/fetch-query";
+
+
+
+
 
 const isDev = process.env.NODE_ENV === "development";
 const devLog = (...args: unknown[]) => {
     if (isDev) console.log(...args);
 };
-
-// Keyboard shortcut definitions for tools
-export const TOOL_SHORTCUTS = {
-    "sql-editor": { key: "U", modifiers: ["⌘", "⇧"] },
-    "script-log-viewer": { key: "L", modifiers: ["⌘", "⇧"] },
-    "command-search": { key: "K", modifiers: ["⌘", "⇧"] },
-    "load-modules": { key: "M", modifiers: ["⌘", "⇧"] },
-} as const;
 
 const ShortcutDisplay = ({ tool }: { tool: keyof typeof TOOL_SHORTCUTS }) => {
     const shortcut = TOOL_SHORTCUTS[tool];
@@ -218,7 +191,6 @@ const buildSuiteQLQuery = ({ query, type: typeMap }) => {
 
     return sql;
 };
-export type ToolType = "sql-editor" | "script-log-viewer" | "load-modules";
 
 interface CommandSearchProps {
     setIsOpen: (open: boolean) => void;
@@ -903,6 +875,15 @@ export const CommandSearch = ({ setIsOpen, onOpenTool }: CommandSearchProps) => 
                         <ScrollText className="plasmo:mr-2" />
                         <span className={"plasmo:text-base"}>Script Log Viewer</span>
                         <ShortcutDisplay tool="script-log-viewer" />
+                    </CommandItem>
+                    <CommandItem
+                        onSelect={() => {
+                            onOpenTool?.("record-detail");
+                        }}
+                    >
+                        <FileBraces className="plasmo:mr-2" />
+                        <span className={"plasmo:text-base"}>View Record Detail</span>
+                        <ShortcutDisplay tool="record-detail" />
                     </CommandItem>
                     <CommandItem
                         onSelect={() => {

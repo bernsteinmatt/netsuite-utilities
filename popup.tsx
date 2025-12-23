@@ -8,7 +8,7 @@ import "~style.css";
 import { ThemeSelector } from "@/components/theme-selector";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Database, FileText, Settings } from "lucide-react";
+import { ArrowLeft, Database, FileCode2, Package, ScrollText, Search, Settings } from "lucide-react";
 import { useState } from "react";
 
 
@@ -62,6 +62,11 @@ const PopupContent = () => {
         defaultValue: true,
     });
 
+    const [recordDetailEnabled, setRecordDetailEnabled] = useStorageBoolean({
+        key: "feature_record_detail",
+        defaultValue: true,
+    });
+
     const [commandSearchEnabled, setCommandSearchEnabled] = useStorageBoolean({
         key: "feature_command_search",
         defaultValue: true,
@@ -99,6 +104,14 @@ const PopupContent = () => {
         });
     };
 
+    const handleOpenRecordDetail = () => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            const tab = tabs[0];
+            chrome.tabs.sendMessage(tab.id, { action: "OPEN_RECORD_DETAIL" });
+            window.close();
+        });
+    };
+
     const hoverClass = "plasmo:hover:bg-primary plasmo:hover:text-primary-foreground";
 
     const mainItemClassName = cn(
@@ -131,21 +144,25 @@ const PopupContent = () => {
                     )}
                     {scriptLogViewerEnabled && (
                         <button onClick={handleOpenScriptLogViewer} className={mainItemClassName}>
-                            <FileText size={18} />
+                            <ScrollText size={18} />
                             <span>Script Log Viewer</span>
                         </button>
                     )}
                     {commandSearchEnabled && (
                         <button onClick={handleOpenCommandSearch} className={mainItemClassName}>
-                            <FileText size={18} />
+                            <Search size={18} />
                             <span>Command Search</span>
+                        </button>
+                    )}
+                    {recordDetailEnabled && (
+                        <button onClick={handleOpenRecordDetail} className={mainItemClassName}>
+                            <FileCode2 size={18} />
+                            <span>View Record Detail</span>
                         </button>
                     )}
                     {loadConsoleModulesEnabled && (
                         <button onClick={handleLoadConsoleModules} className={mainItemClassName}>
-                            <span className="plasmo:font-bold plasmo:flex plasmo:items-center plasmo:justify-center plasmo:w-[18px] plasmo:h-[18px]">
-                                N
-                            </span>
+                            <Package size={18} />
                             <span>Load SuiteScript Modules</span>
                         </button>
                     )}
@@ -172,6 +189,11 @@ const PopupContent = () => {
                     label: "Script Log Viewer",
                     value: scriptLogViewerEnabled,
                     setValue: setScriptLogViewerEnabled,
+                },
+                {
+                    label: "Record Detail JSON",
+                    value: recordDetailEnabled,
+                    setValue: setRecordDetailEnabled,
                 },
                 {
                     label: "Load SuiteScript Modules",

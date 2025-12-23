@@ -48,7 +48,6 @@ const getAccountsData = (): Map<string, string> => {
                         accountMap.set(account.accountName, account.accountId);
                     }
                 }
-                console.log("[My Roles Account IDs] Found accounts data:", accountMap.size);
                 break;
             }
         } catch {
@@ -62,14 +61,12 @@ const getAccountsData = (): Map<string, string> => {
 const injectSearchBox = (accountsMap: Map<string, string>) => {
     // Check if search box already exists
     if (document.querySelector("#netsuite-utilities-myroles-search")) {
-        console.log("[My Roles Search] Search box already exists, skipping");
         return;
     }
 
     // Find the page heading "My Roles"
     const pageHeading = document.querySelector('[data-widget="Heading"][data-kind="page"]');
     if (!pageHeading) {
-        console.log("[My Roles Search] Page heading not found");
         return;
     }
 
@@ -103,7 +100,6 @@ const injectSearchBox = (accountsMap: Map<string, string>) => {
     // Add search functionality
     searchInput.addEventListener("input", (e) => {
         const searchTerm = (e.target as HTMLInputElement).value.toLowerCase();
-        console.log("[My Roles Search] Searching for:", searchTerm);
 
         // Find the accounts grid - it's the one under "Or switch to another account" heading
         // Look for the heading and then find the DataGrid that follows it
@@ -130,7 +126,6 @@ const injectSearchBox = (accountsMap: Map<string, string>) => {
         }
 
         if (!accountsGrid) {
-            console.log("[My Roles Search] Accounts grid not found");
             return;
         }
 
@@ -199,36 +194,27 @@ const injectSearchBox = (accountsMap: Map<string, string>) => {
         if (segmentContainer && searchTerm !== "") {
             segmentContainer.style.height = `${visibleIndex * rowHeight}px`;
         }
-
-        console.log("[My Roles Search] Search complete for:", searchTerm);
     });
 
     // Focus the search input after injection
     setTimeout(() => {
         searchInput.focus();
     }, 100);
-
-    console.log("[My Roles Search] Search box injected successfully");
 };
 
 const addAccountIdsToMyRolesPage = async () => {
     try {
         const isShowAccountIdsEnabled = await storage.get("feature_show_account_ids");
-        console.log("[My Roles Account IDs] Feature enabled:", isShowAccountIdsEnabled);
 
         if (!isShowAccountIdsEnabled) {
-            console.log("[My Roles Account IDs] Feature is disabled, exiting");
             return;
         }
-
-        console.log("[My Roles Account IDs] Initializing...");
 
         const processGridRows = () => {
             // Get account data from embedded JSON
             const accountsMap = getAccountsData();
 
             if (accountsMap.size === 0) {
-                console.log("[My Roles Account IDs] No accounts data found");
                 return;
             }
 
@@ -270,7 +256,6 @@ const addAccountIdsToMyRolesPage = async () => {
                     accountIdSpan.style.userSelect = "text";
 
                     label.appendChild(accountIdSpan);
-                    console.log("[My Roles Account IDs] Added account ID:", accountId);
                 }
             });
         };
@@ -304,8 +289,6 @@ const addAccountIdsToMyRolesPage = async () => {
             childList: true,
             subtree: true,
         });
-
-        console.log("[My Roles Account IDs] MutationObserver started");
     } catch (e) {
         console.error("[My Roles Account IDs] Error:", e);
     }

@@ -116,8 +116,6 @@ const NetsuiteUtilities = () => {
     };
 
     useEffect(() => {
-        console.log("NetSuite Utilities content script running");
-
         if (!(window as any).__netsuiteUtilitiesListenerAdded) {
             (window as any).__netsuiteUtilitiesListenerAdded = true;
             chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

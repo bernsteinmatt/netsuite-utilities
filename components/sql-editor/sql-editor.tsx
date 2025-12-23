@@ -29,7 +29,7 @@ import { useTheme } from "~lib/contexts/theme-context";
 import { isNetSuite } from "~lib/is-netsuite";
 import { mergeReducer } from "~lib/merge-reducer";
 import { executeQuery } from "~lib/netsuite";
-import { formatTime } from "~lib/util";
+import { formatTime } from "~lib/utils";
 
 import { DataContent } from "./data-content";
 import { mockData } from "./mock-data";

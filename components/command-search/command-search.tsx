@@ -16,6 +16,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Kbd, KbdGroup } from "~components/ui/kbd";
 import { Spinner } from "~components/ui/spinner";
 import { TOOL_SHORTCUTS, type ToolType } from "~lib/constants";
+import { debugLog } from "~lib/debug";
 import {
     buildUberSearchUrl,
     escapeSqlString,
@@ -34,10 +35,7 @@ import {
     type Permissions,
 } from "~lib/netsuite";
 
-const isDev = process.env.NODE_ENV === "development";
-const devLog = (...args: unknown[]) => {
-    if (isDev) console.log(...args);
-};
+const devLog = (...args: unknown[]) => debugLog("CommandSearch", ...args);
 
 const ShortcutDisplay = ({ tool }: { tool: keyof typeof TOOL_SHORTCUTS }) => {
     const shortcut = TOOL_SHORTCUTS[tool];

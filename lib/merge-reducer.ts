@@ -1,1 +1,4 @@
-export const mergeReducer = (currentState, action) => ({ ...currentState, ...action });
+export const mergeReducer = <T extends Record<string, unknown>>(
+    currentState: T,
+    action: Partial<T>
+): T => ({ ...currentState, ...action });

@@ -104,7 +104,6 @@ export const searchCustomRecordInstances = async (
 
     const cleanedText = escapeSqlString(searchText);
 
-    console.log("cleanedText HERE", cleanedText);
     // Build individual SELECT queries for each custom record type
     const selectQueries = customRecordTypes.map((crt) => {
         return `
@@ -120,8 +119,6 @@ export const searchCustomRecordInstances = async (
                 LOWER(name) LIKE LOWER('%${cleanedText}%')
         `;
     });
-
-    console.log("selectQueries", selectQueries[0]);
 
     // Batch queries into groups of MAX_UNIONS_PER_BATCH
     const batches: string[][] = [];
@@ -145,7 +142,6 @@ export const searchCustomRecordInstances = async (
     const allData: CustomRecordInstance[] = [];
     for (const result of results) {
         if (result.error) {
-            console.error("Batch query error:", result.error);
             continue;
         }
         if (result.data) {

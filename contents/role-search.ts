@@ -12,21 +12,15 @@ const addRoleSearch = async () => {
     try {
         const isRoleSearchEnabled = await storage.get("feature_role_search");
         const isShowAccountIdsEnabled = await storage.get("feature_show_account_ids");
-        console.log("[Role Search] Feature enabled:", isRoleSearchEnabled);
-        console.log("[Role Search] Show Account IDs enabled:", isShowAccountIdsEnabled);
 
         if (!isRoleSearchEnabled) {
-            console.log("[Role Search] Feature is disabled, exiting");
             return;
         }
-
-        console.log("[Role Search] Initializing...");
 
         // Check if dialog is already open on page load
         const checkExistingDialog = () => {
             const existingDialog = document.querySelector('[role="dialog"][data-widget="Popover"]');
             if (existingDialog) {
-                console.log("[Role Search] Found existing dialog on page load");
                 injectSearchBox(existingDialog as HTMLElement, !!isShowAccountIdsEnabled);
             }
         };
@@ -44,7 +38,6 @@ const addRoleSearch = async () => {
                         // Check if this is the role menu dialog
                         const dialog = node.querySelector('[role="dialog"][data-widget="Popover"]');
                         if (dialog) {
-                            console.log("[Role Search] Dialog detected via MutationObserver");
                             injectSearchBox(dialog as HTMLElement, !!isShowAccountIdsEnabled);
                         }
                         // Also check if the node itself is the dialog
@@ -52,7 +45,6 @@ const addRoleSearch = async () => {
                             node.getAttribute("role") === "dialog" &&
                             node.getAttribute("data-widget") === "Popover"
                         ) {
-                            console.log("[Role Search] Dialog node detected directly");
                             injectSearchBox(node, !!isShowAccountIdsEnabled);
                         }
                     }
@@ -64,28 +56,21 @@ const addRoleSearch = async () => {
             childList: true,
             subtree: true,
         });
-
-        console.log("[Role Search] MutationObserver started");
     } catch (e) {
         console.error("[Role Search] Error initializing:", e);
     }
 };
 
 const injectSearchBox = (dialog: HTMLElement, showAccountIds: boolean = true) => {
-    console.log("[Role Search] Show Account IDs:", showAccountIds);
-
     // Check if search box already exists (use our unique ID)
     if (dialog.querySelector("#netsuite-utilities-role-search")) {
-        console.log("[Role Search] Search box already exists, skipping");
         return;
     }
 
     // Find the menu groups
     const menuGroups = dialog.querySelectorAll('[data-widget="MenuGroup"]');
-    console.log("[Role Search] Found menu groups:", menuGroups.length);
 
     if (menuGroups.length === 0) {
-        console.log("[Role Search] No menu groups found, exiting");
         return;
     }
 
@@ -99,22 +84,17 @@ const injectSearchBox = (dialog: HTMLElement, showAccountIds: boolean = true) =>
         const hasAccountLinks = group.querySelector('a[href*="changeaccount.nl"]');
 
         if (hasRoleLinks && !rolesGroup) {
-            console.log("[Role Search] Found roles group:", group);
             rolesGroup = group;
         }
 
         if (hasAccountLinks && !accountsGroup) {
-            console.log("[Role Search] Found accounts group:", group);
             accountsGroup = group;
         }
     }
 
     if (!rolesGroup) {
-        console.log("[Role Search] No roles group found, exiting");
         return;
     }
-
-    console.log("[Role Search] Injecting search box into roles group");
 
     // Create search container
     const searchContainer = document.createElement("div");
@@ -147,13 +127,8 @@ const injectSearchBox = (dialog: HTMLElement, showAccountIds: boolean = true) =>
         : [];
     const allItems = [...roleItems, ...accountItems];
 
-    console.log("[Role Search] Found role items:", roleItems.length);
-    console.log("[Role Search] Found account items:", accountItems.length);
-    console.log("[Role Search] Total items to filter:", allItems.length);
-
     // Add account IDs to account items if enabled
     if (showAccountIds && accountsGroup) {
-        console.log("[Role Search] Adding account IDs to account items");
         accountItems.forEach((item) => {
             const linkElement = item.querySelector("a");
             const contentElement = item.querySelector('[data-widget="MenuItemContent"]');
@@ -185,32 +160,20 @@ const injectSearchBox = (dialog: HTMLElement, showAccountIds: boolean = true) =>
         });
     }
 
-    // Log the first few role names for debugging
-    allItems.slice(0, 3).forEach((item, idx) => {
-        const textElement = item.querySelector('[data-widget="Text"]');
-        console.log(`[Role Search] Item ${idx}:`, textElement?.textContent);
-    });
-
     // Reset all items to be visible initially (in case they were hidden from a previous search)
     allItems.forEach((item) => {
         (item as HTMLElement).style.display = "";
     });
-    console.log("[Role Search] Reset all items to visible");
 
     // Add search functionality
     searchInput.addEventListener("input", (e) => {
         const searchTerm = (e.target as HTMLInputElement).value.toLowerCase();
-        console.log("[Role Search] Searching for:", searchTerm);
-
-        let visibleCount = 0;
-        let hiddenCount = 0;
 
         allItems.forEach((item) => {
             const textElement = item.querySelector('[data-widget="Text"]');
             const linkElement = item.querySelector("a");
 
             if (!textElement) {
-                console.log("[Role Search] Item has no text element, skipping");
                 return;
             }
 
@@ -222,24 +185,16 @@ const injectSearchBox = (dialog: HTMLElement, showAccountIds: boolean = true) =>
 
             if (matches) {
                 (item as HTMLElement).style.display = "";
-                visibleCount++;
             } else {
                 (item as HTMLElement).style.display = "none";
-                hiddenCount++;
             }
         });
-
-        console.log(
-            `[Role Search] After filter - Visible: ${visibleCount}, Hidden: ${hiddenCount}`
-        );
     });
 
     // Focus the search input after a short delay
     setTimeout(() => {
         searchInput.focus();
     }, 100);
-
-    console.log("[Role Search] Search box successfully injected!");
 };
 
 void addRoleSearch();

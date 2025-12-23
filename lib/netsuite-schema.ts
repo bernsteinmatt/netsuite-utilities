@@ -72,7 +72,6 @@ const processBatch = async (
 
     for (const result of results) {
         if (result.status === "rejected") {
-            console.warn("[Schema] Failed to fetch record:", result.reason);
             continue;
         }
 
@@ -110,9 +109,7 @@ export const fetchNetSuiteSchema = async (
     const processedTables = new Set<string>();
 
     // Step 1: Get all record types
-    console.log("[Schema] Fetching record types...");
     const recordTypes = await getRecordTypes();
-    console.log(`[Schema] Found ${recordTypes.length} record types`);
 
     const total = recordTypes.length;
     let completed = 0;
@@ -131,8 +128,6 @@ export const fetchNetSuiteSchema = async (
 
     // Step 3: Fetch subrecords in batches
     if (allSubrecords.length > 0) {
-        console.log(`[Schema] Fetching ${allSubrecords.length} subrecords...`);
-
         const uniqueSubrecords = allSubrecords.filter(
             (sub, idx, arr) =>
                 !processedTables.has(sub.id) && arr.findIndex((s) => s.id === sub.id) === idx
@@ -150,7 +145,6 @@ export const fetchNetSuiteSchema = async (
 
             for (const result of results) {
                 if (result.status === "rejected") {
-                    console.warn("[Schema] Failed to fetch subrecord:", result.reason);
                     continue;
                 }
 
@@ -167,7 +161,6 @@ export const fetchNetSuiteSchema = async (
         }
     }
 
-    console.log(`[Schema] Completed. Fetched ${Object.keys(schema).length} tables`);
     return schema;
 };
 
@@ -176,7 +169,6 @@ const SCHEMA_STORAGE_KEY = "suiteql-schema";
 
 export const saveSchema = (schema: Schema): void => {
     localStorage.setItem(SCHEMA_STORAGE_KEY, JSON.stringify(schema));
-    console.log("[Schema] Saved to localStorage");
 };
 
 export const loadSchema = (): Schema | null => {
@@ -191,5 +183,4 @@ export const loadSchema = (): Schema | null => {
 
 export const clearSchema = (): void => {
     localStorage.removeItem(SCHEMA_STORAGE_KEY);
-    console.log("[Schema] Cleared from localStorage");
 };

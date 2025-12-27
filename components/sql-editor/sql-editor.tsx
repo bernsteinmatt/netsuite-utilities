@@ -440,7 +440,7 @@ export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
                                         <SelectTrigger>
                                             <SelectValue placeholder="Format" />
                                         </SelectTrigger>
-                                        <SelectContent>
+                                        <SelectContent className={"plasmo:z-10002"}>
                                             <SelectGroup className={"plasmo:py-1!"}>
                                                 {VIEW_TYPES.map((item) => {
                                                     return (

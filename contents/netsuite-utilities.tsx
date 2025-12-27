@@ -174,7 +174,7 @@ const NetsuiteUtilities = () => {
         <ThemeProvider>
             <div
                 className={
-                    "plasmo:absolute plasmo:w-screen plasmo:h-screen plasmo:bg-black/30 plasmo:z-1000 plasmo:top-0 plasmo:left-0 plasmo:flex plasmo:items-center plasmo:justify-center"
+                    "plasmo:absolute plasmo:w-screen plasmo:h-screen plasmo:bg-black/30 plasmo:z-1001 plasmo:top-0 plasmo:left-0 plasmo:flex plasmo:items-center plasmo:justify-center"
                 }
                 ref={containerRef}
             >

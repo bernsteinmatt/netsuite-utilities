@@ -1,10 +1,26 @@
 import { isNetSuite } from "@/lib/is-netsuite";
 import { mockData as defaultMockData } from "@/lib/mock-data";
+import { isSidePanelContext, proxyFetch } from "@/lib/proxy-fetch";
 
 export const escapeSqlString = (value: string): string => {
     // Escape single quotes by doubling them
     // Strip double quotes - SuiteQL doesn't support them in LIKE patterns
     return value.replace(/'/g, "''").replace(/"/g, "");
+};
+
+const NETSUITE_QUERY_URL = "/app/common/scripting/PlatformClientScriptHandler.nl?script=&deploy=";
+
+const NETSUITE_FETCH_OPTIONS: RequestInit = {
+    headers: {
+        accept: "*/*",
+        "accept-language": "en-US,en;q=0.9",
+        "cache-control": "no-cache",
+        "content-type": "text/plain;charset=UTF-8",
+    },
+    referrerPolicy: "strict-origin-when-cross-origin",
+    method: "POST",
+    mode: "cors",
+    credentials: "include",
 };
 
 export const executeQuery = async (
@@ -21,39 +37,32 @@ export const executeQuery = async (
             ],
         };
 
-        if (!isNetSuite()) {
+        const inSidePanel = isSidePanelContext();
+        const inNetSuite = isNetSuite();
+
+        if (!inNetSuite && !inSidePanel) {
             await new Promise((resolve) => setTimeout(resolve, timeout));
             return { data: mockData, error: null };
-        } else {
-            const nsResponse = await fetch(
-                "/app/common/scripting/PlatformClientScriptHandler.nl?script=&deploy=",
-                {
-                    headers: {
-                        accept: "*/*",
-                        "accept-language": "en-US,en;q=0.9",
-                        "cache-control": "no-cache",
-                        "content-type": "text/plain;charset=UTF-8",
-                    },
-                    referrerPolicy: "strict-origin-when-cross-origin",
-                    body: JSON.stringify(fetchBody),
-                    method: "POST",
-                    mode: "cors",
-                    credentials: "include",
-                }
-            );
-
-            if (!nsResponse.ok) {
-                const errorResponse = await nsResponse.text();
-                throw new Error(`Error response: ${errorResponse}`);
-            }
-
-            const data = await nsResponse.json();
-
-            if (data.code) {
-                throw new Error(`${data.code}\n\n${data.details}`);
-            }
-            return { error: null, data };
         }
+
+        // Use proxy fetch if in side panel, otherwise direct fetch
+        const fetchFn = inSidePanel ? proxyFetch : fetch;
+        const nsResponse = await fetchFn(NETSUITE_QUERY_URL, {
+            ...NETSUITE_FETCH_OPTIONS,
+            body: JSON.stringify(fetchBody),
+        });
+
+        if (!nsResponse.ok) {
+            const errorResponse = await nsResponse.text();
+            throw new Error(`Error response: ${errorResponse}`);
+        }
+
+        const data = await nsResponse.json();
+
+        if (data.code) {
+            throw new Error(`${data.code}\n\n${data.details}`);
+        }
+        return { error: null, data };
     } catch (error: any) {
         return { error: error.message, data: null };
     }

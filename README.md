@@ -32,10 +32,11 @@ View any NetSuite record as structured JSON. Press `Ctrl/Cmd + Shift + E` while 
 A full-featured SQL editor for executing SuiteQL queries directly against NetSuite:
 
 - **CodeMirror-powered editor** with syntax highlighting and autocomplete
-- **Multi-tab query management** with persistent storage
+- **Multi-tab query management** with persistent storage (synced across dialog and side panel)
 - **Multiple result formats**: Table view (AG Grid), JSON, and CSV export
-- **Schema caching** - fetch and cache NetSuite record catalog for reference
+- **Schema caching** - fetch and cache NetSuite record catalog for autocomplete
 - **Query formatting** with sql-formatter
+- **Side Panel support** - open in Chrome's side panel for persistent access while browsing
 
 **Keyboard shortcut:** `Ctrl/Cmd + Shift + U`
 
@@ -47,8 +48,23 @@ Browse and filter SuiteScript execution logs with advanced filtering:
 - Date range filtering
 - Virtual scrolling for large datasets
 - Expandable log entries
+- **Side Panel support** - open in Chrome's side panel for persistent access while browsing
 
 **Keyboard shortcut:** `Ctrl/Cmd + Shift + L`
+
+### Side Panel Mode
+
+The SuiteQL Editor and Script Log Viewer can be opened in Chrome's side panel, allowing you to:
+
+- **Keep tools visible** while navigating NetSuite pages
+- **Switch between tools** using keyboard shortcuts - if the side panel is open, new tools open there automatically
+- **Sync queries and schema** between dialog and side panel modes
+- **Configure display mode** per tool in the extension settings
+
+To use side panel mode:
+1. Open a tool via keyboard shortcut or the extension popup
+2. Click the side panel icon in the toolbar to switch modes
+3. Once the side panel is open, subsequent tool shortcuts will open in the panel
 
 ### SuiteScript Module Loader
 
@@ -139,11 +155,14 @@ Load the development build from `build/chrome-mv3-dev` (Chrome) or `build/firefo
 ├── components/          # React components
 │   ├── sql-editor/     # SuiteQL editor components
 │   ├── script-log-viewer/  # Log viewer components
+│   ├── record-detail/  # Record JSON viewer components
+│   ├── command-search/ # Command palette components
 │   └── ui/             # Reusable UI components
 ├── contents/           # Content scripts injected into pages
 ├── lib/                # Utilities, hooks, and contexts
 ├── popup.tsx           # Extension popup
-└── background/         # Service worker scripts
+├── sidepanel.tsx       # Chrome side panel
+└── background.ts       # Service worker script
 ```
 
 ## Contributing

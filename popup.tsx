@@ -14,6 +14,7 @@ import { useState } from "react";
 
 
 import { ThemeProvider } from "~lib/contexts/theme-context";
+import { useDisplayMode } from "~lib/hooks/use-display-mode";
 import { useStorageBoolean } from "~lib/hooks/use-storage-boolean";
 
 
@@ -72,12 +73,31 @@ const PopupContent = () => {
         defaultValue: true,
     });
 
-    const handleOpenSqlEditor = () => {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            const tab = tabs[0];
-            chrome.tabs.sendMessage(tab.id, { action: "OPEN_SQL_EDITOR" });
-            window.close();
+    const { displayMode: sqlEditorDisplayMode } = useDisplayMode("sql-editor");
+    const { displayMode: scriptLogViewerDisplayMode } = useDisplayMode("script-log-viewer");
+
+    // Helper to check if side panel is currently open
+    const checkSidePanelOpen = (): Promise<boolean> => {
+        return new Promise((resolve) => {
+            chrome.runtime.sendMessage({ action: "IS_SIDEPANEL_OPEN" }, (response) => {
+                resolve(response?.isOpen ?? false);
+            });
         });
+    };
+
+    const handleOpenSqlEditor = async () => {
+        // Check if side panel is already open or if preference is side-panel
+        const shouldUseSidePanel = sqlEditorDisplayMode === "side-panel" || await checkSidePanelOpen();
+        if (shouldUseSidePanel) {
+            chrome.runtime.sendMessage({ action: "OPEN_SIDEPANEL", view: "sql-editor" });
+            window.close();
+        } else {
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                const tab = tabs[0];
+                chrome.tabs.sendMessage(tab.id, { action: "OPEN_SQL_EDITOR" });
+                window.close();
+            });
+        }
     };
 
     const handleLoadConsoleModules = () => {
@@ -88,12 +108,19 @@ const PopupContent = () => {
         });
     };
 
-    const handleOpenScriptLogViewer = () => {
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            const tab = tabs[0];
-            chrome.tabs.sendMessage(tab.id, { action: "OPEN_SCRIPT_LOG_VIEWER" });
+    const handleOpenScriptLogViewer = async () => {
+        // Check if side panel is already open or if preference is side-panel
+        const shouldUseSidePanel = scriptLogViewerDisplayMode === "side-panel" || await checkSidePanelOpen();
+        if (shouldUseSidePanel) {
+            chrome.runtime.sendMessage({ action: "OPEN_SIDEPANEL", view: "script-log-viewer" });
             window.close();
-        });
+        } else {
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                const tab = tabs[0];
+                chrome.tabs.sendMessage(tab.id, { action: "OPEN_SCRIPT_LOG_VIEWER" });
+                window.close();
+            });
+        }
     };
 
     const handleOpenCommandSearch = () => {

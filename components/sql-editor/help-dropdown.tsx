@@ -8,9 +8,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { isNetSuite } from "@/lib/is-netsuite";
-import { clearSchema, fetchNetSuiteSchema, loadSchema, saveSchema } from "@/lib/netsuite-schema";
+import { clearSchema, fetchNetSuiteSchema, loadSchema, saveSchema, type Schema } from "@/lib/netsuite-schema";
 import { ExternalLink, HelpCircle, Keyboard, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const isMac =
     typeof navigator !== "undefined" && navigator.userAgent.toUpperCase().indexOf("MAC") >= 0;
@@ -50,6 +50,11 @@ export const HelpDropdown = () => {
     const [isFetchingSchema, setIsFetchingSchema] = useState(false);
     const [schemaProgress, setSchemaProgress] = useState<string>("");
     const [showShortcuts, setShowShortcuts] = useState(false);
+    const [cachedSchema, setCachedSchema] = useState<Schema | null>(null);
+
+    useEffect(() => {
+        loadSchema().then(setCachedSchema);
+    }, []);
 
     const handleLinkClick = (getUrl: () => string | null) => {
         const url = getUrl();
@@ -70,7 +75,7 @@ export const HelpDropdown = () => {
             });
 
             saveSchema(schema);
-            console.log("[Schema] Cached schema:", schema);
+            setCachedSchema(schema);
             setSchemaProgress(`Done! ${Object.keys(schema).length} tables`);
 
             // Reset progress after a delay
@@ -85,7 +90,6 @@ export const HelpDropdown = () => {
         }
     };
 
-    const cachedSchema = loadSchema();
     const hasCachedSchema = cachedSchema !== null;
     const cachedTableCount = hasCachedSchema ? Object.keys(cachedSchema).length : 0;
 

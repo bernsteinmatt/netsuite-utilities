@@ -301,7 +301,7 @@ const JsonNode = ({
                 />
             </div>
             {isExpanded && (
-                <div className="plasmo:ml-4 plasmo:pl-2 plasmo:border-l plasmo:border-gray-700">
+                <div className="plasmo:ml-4! plasmo:pl-2! plasmo:border-l plasmo:border-gray-700">
                     {entries.map(([key, val]) => (
                         <JsonNode
                             key={key}
@@ -416,7 +416,7 @@ export const RecordDetail = ({ setIsOpen }: RecordDetailProps) => {
                                     </span>
                                 )}
                             </DialogTitle>
-                            <div className="plasmo:flex plasmo:items-center plasmo:gap-1 plasmo:mr-8">
+                            <div className="plasmo:flex plasmo:items-center plasmo:gap-1 plasmo:mr-8!">
                                 <Button
                                     variant="ghost"
                                     size="icon"

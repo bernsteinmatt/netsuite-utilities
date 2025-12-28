@@ -1,4 +1,3 @@
-import { loadSchema } from "@/lib/netsuite-schema";
 import { SQLDialect, type SQLConfig } from "@codemirror/lang-sql";
 
 // SuiteQL keywords - SELECT statements only
@@ -101,13 +100,11 @@ const BUILTIN_FUNCTION_NAMES = [
 ];
 
 // Build the schema for autocomplete
-const buildSchema = (): Record<string, string[]> => {
+const buildSchema = (cachedSchema?: Record<string, string[]> | null): Record<string, string[]> => {
     const schema: Record<string, string[]> = {
         BUILTIN: BUILTIN_FUNCTION_NAMES,
     };
 
-    // Load cached NetSuite schema if available
-    const cachedSchema = loadSchema();
     if (cachedSchema) {
         Object.assign(schema, cachedSchema);
     }
@@ -115,10 +112,10 @@ const buildSchema = (): Record<string, string[]> => {
     return schema;
 };
 
-export const getSuiteqlConfig = (): SQLConfig => ({
+export const getSuiteqlConfig = (cachedSchema?: Record<string, string[]> | null): SQLConfig => ({
     upperCaseKeywords: true,
     dialect: SuiteQLDialect,
-    schema: buildSchema(),
+    schema: buildSchema(cachedSchema),
 });
 
 // For backwards compatibility - but won't include dynamic schema

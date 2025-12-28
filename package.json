@@ -1,8 +1,8 @@
 {
     "name": "netsuite-utilities",
     "displayName": "NetSuite Utilities",
-    "version": "0.0.1",
-    "description": "A browser extension that enhances NetSuite with a SuiteQL editor, script log viewer, and productivity tools",
+    "version": "0.0.3",
+    "description": "Supercharge NetSuite with SuiteQL Editor, Script Log Viewer, Command Search, Record Detail viewer, and UI enhancements",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -86,9 +86,6 @@
         "host_permissions": [
             "https://*.app.netsuite.com/*",
             "https://*.netsuite.com/*"
-        ],
-        "permissions": [
-            "scripting"
         ],
         "browser_specific_settings": {
             "gecko": {

@@ -4,28 +4,27 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import {
-    ChevronsDownUp,
-    ChevronsUpDown,
-    FileText,
-    Filter,
-    Moon,
-    RotateCw,
-    Sun,
-    X,
-} from "lucide-react";
+import { ChevronsDownUp, ChevronsUpDown, FileText, Filter, Moon, PanelRight, RotateCw, Sun, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+
+
 import { useTheme } from "~lib/contexts/theme-context";
+import { useDisplayMode } from "~lib/hooks/use-display-mode";
 import { isNetSuite } from "~lib/is-netsuite";
 import { executeQuery } from "~lib/netsuite";
+import { isSidePanelContext } from "~lib/proxy-fetch";
+
+
 
 import { LOCAL_STORAGE_KEY } from "./constants";
 import { LogRow } from "./log-row";
 import { logTypeOptions, scriptLogMockData, scriptOptions } from "./mock-data";
 
+
 interface ScriptLogViewerProps {
     setIsOpen: (open: boolean) => void;
+    isSidePanel?: boolean;
 }
 
 interface LogEntry {
@@ -206,9 +205,31 @@ const DateTimeInput = ({
     );
 };
 
-export const ScriptLogViewer = ({ setIsOpen }: ScriptLogViewerProps) => {
+export const ScriptLogViewer = ({ setIsOpen, isSidePanel = false }: ScriptLogViewerProps) => {
     const parentRef = useRef<HTMLDivElement>(null);
     const { theme, toggleTheme } = useTheme();
+    const { displayMode, setDisplayMode } = useDisplayMode("script-log-viewer");
+    const buttonSize = isSidePanel ? "icon-sm" : "sm";
+
+    const handleToggleDisplayMode = useCallback(() => {
+        if (isSidePanel) {
+            // Currently in side panel, switch to dialog mode
+            setDisplayMode("dialog");
+            // Tell content script to open dialog, then close side panel
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                const tabId = tabs[0]?.id;
+                if (tabId) {
+                    chrome.tabs.sendMessage(tabId, { action: "OPEN_SCRIPT_LOG_VIEWER" });
+                }
+            });
+            window.close(); // Close the side panel
+        } else {
+            // Currently in dialog, switch to side panel mode
+            setDisplayMode("side-panel");
+            setIsOpen(false);
+            chrome.runtime.sendMessage({ action: "OPEN_SIDEPANEL", view: "script-log-viewer" });
+        }
+    }, [isSidePanel, displayMode, setDisplayMode, setIsOpen]);
 
     const storedState = useMemo(() => loadState(), []);
 
@@ -243,7 +264,7 @@ export const ScriptLogViewer = ({ setIsOpen }: ScriptLogViewerProps) => {
     }, [filters, defaultExpanded]);
 
     const fetchScriptOptions = useCallback(async () => {
-        if (!isNetSuite()) return;
+        if (!isNetSuite() && !isSidePanelContext()) return;
 
         try {
             const query = `SELECT id, name FROM script ORDER BY name`;
@@ -268,7 +289,7 @@ export const ScriptLogViewer = ({ setIsOpen }: ScriptLogViewerProps) => {
         setError(null);
 
         try {
-            if (!isNetSuite()) {
+            if (!isNetSuite() && !isSidePanelContext()) {
                 // Use mock data for development
                 await new Promise((resolve) => setTimeout(resolve, MOCK_QUERY_DELAY_MS));
 
@@ -429,57 +450,73 @@ export const ScriptLogViewer = ({ setIsOpen }: ScriptLogViewerProps) => {
     };
 
     return (
-        <div
-            className="plasmo:bg-background plasmo:text-foreground plasmo:z-1001 plasmo:flex plasmo:flex-col plasmo:rounded-lg plasmo:overflow-hidden"
-            style={{ height: "calc(100vh - 2vh)", width: "calc(100vw - 2vw)" }}
-        >
+        <div className="plasmo:bg-background plasmo:text-foreground plasmo:z-1001 plasmo:flex plasmo:flex-col plasmo:rounded-lg plasmo:overflow-hidden plasmo:h-full plasmo:w-full">
             {/* Header */}
-            <div className="plasmo:flex plasmo:items-center plasmo:justify-between plasmo:px-4! plasmo:py-3! plasmo:border-b plasmo:border-card">
-                <div className="plasmo:flex plasmo:items-center plasmo:gap-3">
-                    <span className="plasmo:text-lg plasmo:font-bold">SuiteScript Script Logs</span>
-                    <span className="plasmo:text-muted-foreground plasmo:text-sm">
+            <div className="plasmo:flex plasmo:items-center plasmo:justify-between plasmo:px-2! plasmo:lg:px-4! plasmo:py-2! plasmo:lg:py-3! plasmo:border-b plasmo:border-card">
+                <div className="plasmo:flex plasmo:items-center plasmo:gap-2 plasmo:lg:gap-3">
+                    <span className="plasmo:text-sm plasmo:lg:text-lg plasmo:font-bold">
+                        {isSidePanel ? "Script Logs" : "SuiteScript Script Logs"}
+                    </span>
+                    <span className="plasmo:text-muted-foreground plasmo:text-xs plasmo:lg:text-sm">
                         {logs.length} logs
                     </span>
                 </div>
-                <div className="plasmo:flex plasmo:items-center plasmo:gap-2">
+                <div className="plasmo:flex plasmo:items-center plasmo:gap-1 plasmo:lg:gap-2">
                     <Button
                         variant="ghost"
-                        size="sm"
+                        size="icon"
                         onClick={() => setShowFilters(!showFilters)}
                         className="plasmo:cursor-pointer"
+                        title={showFilters ? "Hide Filters" : "Show Filters"}
                     >
-                        <Filter className="plasmo:size-4 plasmo:mr-2" />
-                        {showFilters ? "Hide Filters" : "Show Filters"}
+                        <Filter className="plasmo:size-4" />
                     </Button>
                     <Button
                         variant="ghost"
                         size="icon"
-                        onClick={toggleTheme}
+                        onClick={handleToggleDisplayMode}
                         className="plasmo:cursor-pointer"
+                        title={
+                            displayMode === "dialog" ? "Switch to side panel" : "Switch to dialog"
+                        }
                     >
-                        {theme === "dark-grey" ? (
-                            <Sun className="plasmo:size-5" />
-                        ) : (
-                            <Moon className="plasmo:size-5" />
-                        )}
+                        <PanelRight className="plasmo:size-5" />
                     </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setIsOpen(false)}
-                        className="plasmo:cursor-pointer"
-                    >
-                        <X className="plasmo:size-5" />
-                    </Button>
+                    {!isSidePanel && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={toggleTheme}
+                            className="plasmo:cursor-pointer"
+                        >
+                            {theme === "dark-grey" ? (
+                                <Sun className="plasmo:size-5" />
+                            ) : (
+                                <Moon className="plasmo:size-5" />
+                            )}
+                        </Button>
+                    )}
+                    {!isSidePanel && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setIsOpen(false)}
+                            className="plasmo:cursor-pointer"
+                        >
+                            <X className="plasmo:size-5" />
+                        </Button>
+                    )}
                 </div>
             </div>
 
             {/* Filters */}
             {showFilters && (
-                <div className="plasmo:px-4! plasmo:py-3! plasmo:border-b plasmo:border-card plasmo:bg-card/30">
-                    <div className="plasmo:grid plasmo:grid-cols-6 plasmo:gap-3">
+                <div className="plasmo:px-2! plasmo:lg:px-4! plasmo:py-2! plasmo:lg:py-3! plasmo:border-b plasmo:border-card plasmo:bg-card/30">
+                    <div className="plasmo:grid plasmo:grid-cols-2 plasmo:lg:grid-cols-6 plasmo:gap-2 plasmo:lg:gap-3">
                         <Field>
-                            <FieldLabel>Log Type</FieldLabel>
+                            <FieldLabel className="plasmo:text-xs plasmo:lg:text-sm">
+                                Log Type
+                            </FieldLabel>
                             <ComboboxMulti
                                 options={logTypeOptions}
                                 value={filters.type}
@@ -490,7 +527,9 @@ export const ScriptLogViewer = ({ setIsOpen }: ScriptLogViewerProps) => {
                         </Field>
 
                         <Field>
-                            <FieldLabel>Script</FieldLabel>
+                            <FieldLabel className="plasmo:text-xs plasmo:lg:text-sm">
+                                Script
+                            </FieldLabel>
                             <ComboboxMulti
                                 options={scriptOptionsList}
                                 value={filters.scripts}
@@ -501,7 +540,9 @@ export const ScriptLogViewer = ({ setIsOpen }: ScriptLogViewerProps) => {
                         </Field>
 
                         <Field>
-                            <FieldLabel>Title</FieldLabel>
+                            <FieldLabel className="plasmo:text-xs plasmo:lg:text-sm">
+                                Title
+                            </FieldLabel>
                             <Input
                                 type="text"
                                 value={filters.title}
@@ -511,7 +552,9 @@ export const ScriptLogViewer = ({ setIsOpen }: ScriptLogViewerProps) => {
                         </Field>
 
                         <Field>
-                            <FieldLabel>Detail</FieldLabel>
+                            <FieldLabel className="plasmo:text-xs plasmo:lg:text-sm">
+                                Detail
+                            </FieldLabel>
                             <Input
                                 type="text"
                                 value={filters.detail}
@@ -521,7 +564,9 @@ export const ScriptLogViewer = ({ setIsOpen }: ScriptLogViewerProps) => {
                         </Field>
 
                         <Field>
-                            <FieldLabel>From</FieldLabel>
+                            <FieldLabel className="plasmo:text-xs plasmo:lg:text-sm">
+                                From
+                            </FieldLabel>
                             <DateTimeInput
                                 value={filters.fromDate}
                                 onChange={(val) => updateFilter("fromDate", val)}
@@ -530,7 +575,7 @@ export const ScriptLogViewer = ({ setIsOpen }: ScriptLogViewerProps) => {
                         </Field>
 
                         <Field>
-                            <FieldLabel>To</FieldLabel>
+                            <FieldLabel className="plasmo:text-xs plasmo:lg:text-sm">To</FieldLabel>
                             <DateTimeInput
                                 value={filters.toDate}
                                 onChange={(val) => updateFilter("toDate", val)}
@@ -542,46 +587,54 @@ export const ScriptLogViewer = ({ setIsOpen }: ScriptLogViewerProps) => {
             )}
 
             {/* Toolbar - always visible */}
-            <div className="plasmo:flex plasmo:items-center plasmo:justify-between plasmo:gap-2 plasmo:px-4! plasmo:py-2! plasmo:border-b plasmo:border-card plasmo:bg-card/30">
-                <div className="plasmo:flex plasmo:items-center plasmo:gap-4">
-                    <label className="plasmo:flex plasmo:items-center plasmo:gap-2 plasmo:cursor-pointer">
+            <div className="plasmo:flex plasmo:items-center plasmo:justify-between plasmo:gap-1 plasmo:lg:gap-2 plasmo:px-2! plasmo:lg:px-4! plasmo:py-1! plasmo:lg:py-2! plasmo:border-b plasmo:border-card plasmo:bg-card/30">
+                <div className="plasmo:flex plasmo:items-center plasmo:gap-2 plasmo:lg:gap-4">
+                    <label className="plasmo:flex plasmo:items-center plasmo:gap-1 plasmo:lg:gap-2 plasmo:cursor-pointer">
                         <input
                             type="checkbox"
                             checked={defaultExpanded}
                             onChange={(e) => setDefaultExpanded(e.target.checked)}
                             className="plasmo:rounded"
                         />
-                        <span className="plasmo:text-sm">Auto-expand logs</span>
+                        <span className="plasmo:text-xs plasmo:lg:text-sm plasmo:whitespace-nowrap">
+                            {isSidePanel ? "Auto-expand" : "Auto-expand logs"}
+                        </span>
                     </label>
                     <Button
                         variant="outline"
-                        size="sm"
+                        size={buttonSize}
                         onClick={() => {
                             setDefaultExpanded(true);
                             setExpandKey((k) => k + 1);
                         }}
                         className="plasmo:cursor-pointer"
+                        title="Expand All"
                     >
-                        <ChevronsUpDown className="plasmo:size-4 plasmo:mr-1" />
-                        Expand All
+                        <ChevronsUpDown className="plasmo:size-4" />
+                        <span className="plasmo:hidden plasmo:lg:inline plasmo:ml-1">
+                            Expand All
+                        </span>
                     </Button>
                     <Button
                         variant="outline"
-                        size="sm"
+                        size={buttonSize}
                         onClick={() => {
                             setDefaultExpanded(false);
                             setExpandKey((k) => k + 1);
                         }}
                         className="plasmo:cursor-pointer"
+                        title="Collapse All"
                     >
-                        <ChevronsDownUp className="plasmo:size-4 plasmo:mr-1" />
-                        Collapse All
+                        <ChevronsDownUp className="plasmo:size-4" />
+                        <span className="plasmo:hidden plasmo:lg:inline plasmo:ml-1">
+                            Collapse All
+                        </span>
                     </Button>
                 </div>
-                <div className="plasmo:flex plasmo:items-center plasmo:gap-2">
+                <div className="plasmo:flex plasmo:items-center plasmo:gap-1 plasmo:lg:gap-2">
                     <Button
                         variant="outline"
-                        size="sm"
+                        size={buttonSize}
                         onClick={() => {
                             setFilters((prev) => ({
                                 ...prev,
@@ -591,14 +644,15 @@ export const ScriptLogViewer = ({ setIsOpen }: ScriptLogViewerProps) => {
                             setLogs([]);
                         }}
                         className="plasmo:cursor-pointer"
+                        title="Remove All"
                     >
-                        Remove All
+                        <Trash2 className="plasmo:size-4 plasmo:lg:hidden" />
+                        <span className="plasmo:hidden plasmo:lg:inline">Remove All</span>
                     </Button>
                     <Button
-                        size="icon"
+                        size={buttonSize}
                         onClick={fetchLogs}
                         disabled={loading}
-                        // variant="secondary"
                         className="plasmo:cursor-pointer"
                     >
                         {loading ? (

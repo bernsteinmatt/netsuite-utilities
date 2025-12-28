@@ -1,6 +1,8 @@
 // NetSuite Schema Fetcher
 // Fetches record types and their fields from the Records Catalog API
 
+import { Storage } from "@plasmohq/storage";
+
 const REQUEST_BASE = "/app/recordscatalog/rcendpoint.nl";
 
 interface RecordType {
@@ -165,22 +167,18 @@ export const fetchNetSuiteSchema = async (
 };
 
 // Storage key for cached schema
+const storage = new Storage();
 const SCHEMA_STORAGE_KEY = "suiteql-schema";
 
 export const saveSchema = (schema: Schema): void => {
-    localStorage.setItem(SCHEMA_STORAGE_KEY, JSON.stringify(schema));
+    storage.set(SCHEMA_STORAGE_KEY, schema);
 };
 
-export const loadSchema = (): Schema | null => {
-    const stored = localStorage.getItem(SCHEMA_STORAGE_KEY);
-    if (!stored) return null;
-    try {
-        return JSON.parse(stored);
-    } catch {
-        return null;
-    }
+export const loadSchema = async (): Promise<Schema | null> => {
+    const schema = await storage.get<Schema>(SCHEMA_STORAGE_KEY);
+    return schema || null;
 };
 
 export const clearSchema = (): void => {
-    localStorage.removeItem(SCHEMA_STORAGE_KEY);
+    storage.remove(SCHEMA_STORAGE_KEY);
 };

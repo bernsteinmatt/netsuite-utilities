@@ -3,14 +3,7 @@ import { CopyDropdown } from "@/components/sql-editor/copy-dropdown";
 import { DownloadDropdown } from "@/components/sql-editor/download-dropdown";
 import { HelpDropdown } from "@/components/sql-editor/help-dropdown";
 import { Button } from "@/components/ui/button";
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 // NOTE: react-resizable-panels does not work with Shadow DOM because it attaches pointer event
 // listeners to document.body. See content.tsx getRootContainer() for Shadow DOM bypass.
@@ -19,21 +12,30 @@ import { sql } from "@codemirror/lang-sql";
 import { oneDark } from "@codemirror/theme-one-dark";
 import CodeMirror, { type ReactCodeMirrorRef } from "@uiw/react-codemirror";
 import clsx from "clsx";
-import { Database, Moon, Play, Plus, Sun, X } from "lucide-react";
-import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { Database, Moon, PanelRight, Play, Plus, Sun, X } from "lucide-react";
+import React, { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { format as sqlFormat } from "sql-formatter";
+
+
+
+import { Storage } from "@plasmohq/storage";
 
 import { darkGreyTheme, lightTheme } from "~lib/codemirror-themes";
 import { LOCAL_QUERIES_KEY } from "~lib/constants";
 import { useTheme } from "~lib/contexts/theme-context";
+import { useDisplayMode } from "~lib/hooks/use-display-mode";
 import { isNetSuite } from "~lib/is-netsuite";
 import { mergeReducer } from "~lib/merge-reducer";
 import { executeQuery } from "~lib/netsuite";
+import { loadSchema, type Schema } from "~lib/netsuite-schema";
 import { formatTime } from "~lib/utils";
+
+
 
 import { DataContent } from "./data-content";
 import { mockData } from "./mock-data";
 import { getSuiteqlConfig } from "./suiteql-completions";
+
 
 const { Panel, PanelGroup, PanelResizeHandle } = ResizablePanels;
 
@@ -89,23 +91,24 @@ const convertResponse = (data: NetSuiteQueryResponse) => {
     return result;
 };
 
-// Helper: load stored state from local storage.
-const loadState = () => {
-    const stateString = localStorage.getItem(LOCAL_QUERIES_KEY);
-    if (!stateString) return null;
-    try {
-        return JSON.parse(stateString);
-    } catch (e) {
-        console.error("Error parsing sql editor state:", e);
-        return null;
-    }
-};
-
 // Constants for storage limits
 const MAX_STORED_TABS = 20;
 const MAX_QUERY_LENGTH = 50000; // ~50KB per query
 
-// Helper: save the current tabs (only id, name, and query) to local storage.
+const storage = new Storage();
+
+interface StoredState {
+    tabs: { id: string; name: string; query: string }[];
+    activeTabId: string;
+}
+
+// Helper: load stored state (shared across all extension contexts)
+const loadState = async (): Promise<StoredState | null> => {
+    const state = await storage.get<StoredState>(LOCAL_QUERIES_KEY);
+    return state || null;
+};
+
+// Helper: save the current tabs (only id, name, and query)
 const saveState = (tabs: QueryTab[], activeTabId: string) => {
     // Only persist id, name, and query, with limits
     const storedTabs = tabs.slice(0, MAX_STORED_TABS).map(({ id, name, query }) => ({
@@ -113,47 +116,46 @@ const saveState = (tabs: QueryTab[], activeTabId: string) => {
         name,
         query: query.slice(0, MAX_QUERY_LENGTH),
     }));
-    const state = { tabs: storedTabs, activeTabId };
-    try {
-        localStorage.setItem(LOCAL_QUERIES_KEY, JSON.stringify(state));
-    } catch (e) {
-        if (e instanceof DOMException && e.name === "QuotaExceededError") {
-            console.warn("localStorage quota exceeded, clearing saved queries");
-            localStorage.removeItem(LOCAL_QUERIES_KEY);
-        }
-    }
+    const state: StoredState = { tabs: storedTabs, activeTabId };
+    storage.set(LOCAL_QUERIES_KEY, state);
 };
 
 interface SqlEditorProps {
     setIsOpen: (open: boolean) => void;
+    isSidePanel?: boolean;
 }
 
-export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
-    const storedState = useMemo(() => loadState(), []);
+const DEFAULT_TAB: QueryTab = {
+    id: "1",
+    name: "Query 1",
+    query: "SELECT * FROM entity",
+    result: null,
+    error: null,
+};
+
+export const SqlEditor = ({ setIsOpen, isSidePanel = false }: SqlEditorProps) => {
     const editorRef = useRef<ReactCodeMirrorRef>(null);
 
-    const [tabs, setTabs] = useState<QueryTab[]>(() => {
-        if (storedState && storedState.tabs.length > 0) {
-            // When restoring, set result and error to null.
-            return storedState.tabs.map((t) => ({
-                ...t,
-                result: null,
-                error: null,
-            }));
-        }
-        return [
-            {
-                id: "1",
-                name: "Query 1",
-                query: "SELECT * FROM entity",
-                result: null,
-                error: null,
-            },
-        ];
-    });
+    const [tabs, setTabs] = useState<QueryTab[]>([DEFAULT_TAB]);
+    const [activeTabId, setActiveTabId] = useState<string>("1");
+    const [cachedSchema, setCachedSchema] = useState<Schema | null>(null);
 
-    // Initialize activeTabId from the stored state, defaulting to "1".
-    const [activeTabId, setActiveTabId] = useState<string>(() => storedState?.activeTabId || "1");
+    // Load stored state and schema from chrome.storage.local on mount
+    useEffect(() => {
+        loadState().then((storedState) => {
+            if (storedState && storedState.tabs.length > 0) {
+                setTabs(
+                    storedState.tabs.map((t) => ({
+                        ...t,
+                        result: null,
+                        error: null,
+                    }))
+                );
+                setActiveTabId(storedState.activeTabId || "1");
+            }
+        });
+        loadSchema().then(setCachedSchema);
+    }, []);
 
     const [loading, setLoading] = useState(false);
     const [dataFormat, setDataFormat] = useState<"table" | "json" | "csv">("table");
@@ -165,6 +167,27 @@ export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
 
     const activeTab = tabs.find((tab) => tab.id === activeTabId)!;
     const { theme, toggleTheme } = useTheme();
+    const { displayMode, setDisplayMode } = useDisplayMode("sql-editor");
+
+    const handleToggleDisplayMode = useCallback(() => {
+        if (isSidePanel) {
+            // Currently in side panel, switch to dialog mode
+            setDisplayMode("dialog");
+            // Tell content script to open dialog, then close side panel
+            chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+                const tabId = tabs[0]?.id;
+                if (tabId) {
+                    chrome.tabs.sendMessage(tabId, { action: "OPEN_SQL_EDITOR" });
+                }
+            });
+            window.close(); // Close the side panel
+        } else {
+            // Currently in dialog, switch to side panel mode
+            setDisplayMode("side-panel");
+            setIsOpen(false);
+            chrome.runtime.sendMessage({ action: "OPEN_SIDEPANEL", view: "sql-editor" });
+        }
+    }, [isSidePanel, displayMode, setDisplayMode, setIsOpen]);
 
     const getSelectedText = useCallback((): string | null => {
         const view = editorRef.current?.view;
@@ -189,6 +212,7 @@ export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
     }, [tabs, activeTabId]);
 
     const handleSubmit = useCallback(async () => {
+        console.log("🟣 [SqlEditor] handleSubmit called", { isSidePanel });
         setLoading(true);
         const start = Date.now();
 
@@ -197,7 +221,9 @@ export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
         const queryToExecute = selectedText || activeTab.query;
 
         try {
-            if (!isNetSuite()) {
+            // Use mock data only in local dev (not on NetSuite and not in side panel)
+            if (!isNetSuite() && !isSidePanel) {
+                console.log("🟣 [SqlEditor] Using mock data (local dev)");
                 window.setTimeout(() => {
                     dispatchQueryStats({ time: Date.now() - start });
                     setTabs((prevTabs) =>
@@ -210,7 +236,9 @@ export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
                 return;
             }
 
+            console.log("🟣 [SqlEditor] Calling executeQuery");
             const { error, data } = await executeQuery(queryToExecute);
+            console.log("🟣 [SqlEditor] executeQuery returned", { error, data, dataKeys: data ? Object.keys(data) : null });
 
             if (error) {
                 setTabs((prevTabs) =>
@@ -219,6 +247,8 @@ export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
                     )
                 );
             } else {
+                console.log("🟣 [SqlEditor] data.result", data?.result);
+                console.log("🟣 [SqlEditor] data.result.result", data?.result?.result);
                 const parsedResponseResult = convertResponse(data.result.result);
                 setTabs((prevTabs) =>
                     prevTabs.map((tab) =>
@@ -317,51 +347,54 @@ export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
     }, [handleFormat, handleSubmit, setIsOpen]);
 
     return (
-        <div
-            className="plasmo:bg-background plasmo:text-foreground plasmo:z-1001 plasmo:flex plasmo:flex-col"
-            style={{ height: "calc(100vh - 2vh)", width: "calc(100vw - 2vw)" }}
-        >
+        <div className="plasmo:bg-background plasmo:text-foreground plasmo:z-1001 plasmo:flex plasmo:flex-col plasmo:h-full plasmo:w-full">
             <PanelGroup direction="vertical">
                 <Panel defaultSize={60} minSize={30}>
-                    <div className="plasmo:flex plasmo:h-full plasmo:flex-col plasmo:gap-2">
+                    <div className="plasmo:flex plasmo:h-full plasmo:flex-col plasmo:gap-1 plasmo:lg:gap-2">
                         <div className="plasmo:flex plasmo:items-center plasmo:justify-between plasmo:px-4! plasmo:py-2!">
-                            <div className="plasmo:flex plasmo:items-center plasmo:gap-12">
+                            <div className="plasmo:flex plasmo:items-center plasmo:gap-4 plasmo:lg:gap-12">
                                 <div className="plasmo:flex plasmo:items-center plasmo:gap-2">
-                                    <Database className="plasmo:size-5 plasmo:text-blue-400" />
-                                    <div className="plasmo:text-lg plasmo:font-bold">
+                                    <Database className="plasmo:size-3 plasmo:lg:size-5 plasmo:text-blue-400" />
+                                    <div className="plasmo:text-sm plasmo:lg:text-lg plasmo:font-bold">
                                         SuiteQL Editor
                                     </div>
                                     <HelpDropdown />
                                 </div>
-                                <div className="plasmo:flex plasmo:items-center plasmo:gap-12">
-                                    <div className="plasmo:flex plasmo:items-center plasmo:gap-2">
-                                        <div>Execution Time</div>
+                                <div className="plasmo:flex plasmo:items-center plasmo:gap-4 plasmo:lg:gap-12 plasmo:text-xs plasmo:lg:text-base">
+                                    <div className="plasmo:flex plasmo:items-center plasmo:gap-1 plasmo:lg:gap-2">
+                                        <div className="">
+                                            {isSidePanel ? "Time" : "Execution Time"}
+                                        </div>
                                         {loading || !queryStats.time
                                             ? "-"
                                             : formatTime(queryStats.time)}
                                     </div>
-                                    <div className="plasmo:flex plasmo:items-center plasmo:gap-2">
-                                        <div>Row Count</div>
+                                    <div className="plasmo:flex plasmo:items-center plasmo:gap-1 plasmo:lg:gap-2">
+                                        <div className="">
+                                            {isSidePanel ? "Count" : "Row Count"}
+                                        </div>
                                         {loading ? "-" : activeTab.result?.length || "-"}
                                     </div>
                                 </div>
                             </div>
-                            <div>
-                                <Button
-                                    onClick={() => setIsOpen(false)}
-                                    variant={"ghost"}
-                                    size={"icon"}
-                                    className={"plasmo:cursor-pointer"}
-                                >
-                                    <X className="plasmo:size-5" />
-                                </Button>
-                            </div>
+                            {!isSidePanel && (
+                                <div>
+                                    <Button
+                                        onClick={() => setIsOpen(false)}
+                                        variant={"ghost"}
+                                        size={"icon"}
+                                        className={"plasmo:cursor-pointer"}
+                                    >
+                                        <X className="plasmo:size-5" />
+                                    </Button>
+                                </div>
+                            )}
                         </div>
 
-                        <div className="plasmo:flex plasmo:flex-nowrap plasmo:justify-between plasmo:gap-4 plasmo:px-2!">
+                        <div className="plasmo:flex plasmo:flex-wrap plasmo:lg:flex-nowrap plasmo:justify-between plasmo:gap-2 plasmo:lg:gap-4 plasmo:px-2!">
                             <div
                                 className={
-                                    "plasmo:col-span-9 plasmo:flex plasmo:items-center plasmo:gap-1 plasmo:overflow-auto"
+                                    "plasmo:flex plasmo:items-center plasmo:gap-1 plasmo:overflow-auto plasmo:shrink plasmo:min-w-0"
                                 }
                             >
                                 {tabs.map((tab) => (
@@ -374,7 +407,9 @@ export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
                                             activeTabId === tab.id
                                                 ? "plasmo:bg-card plasmo:text-foreground plasmo:border-primary"
                                                 : "plasmo:hover:bg-card plasmo:hover:text-foreground plasmo:bg-card/70 plasmo:border-transparent plasmo:text-muted-foreground",
-                                            tabs.length > 1 ? "plasmo:px-2!" : "plasmo:px-4!"
+                                            tabs.length > 1
+                                                ? "plasmo:px-2! plasmo:lg:px-2!"
+                                                : "plasmo:px-2! plasmo:lg:px-4!"
                                         )}
                                         onClick={() => setActiveTabId(tab.id)}
                                         onKeyDown={(e) => {
@@ -384,13 +419,13 @@ export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
                                             }
                                         }}
                                     >
-                                        <div className="plasmo:text-sm plasmo:py-2!">
+                                        <div className="plasmo:text-sm plasmo:py-1! plasmo:lg:py-2!">
                                             {tab.name}
                                         </div>
                                         {tabs.length > 1 && (
                                             <Button
                                                 className={cn(
-                                                    "plasmo:cursor-pointer plasmo:rounded-full",
+                                                    "plasmo:cursor-pointer plasmo:rounded-full plasmo:size-5 plasmo:lg-size-8",
                                                     activeTabId === tab.id
                                                         ? "plasmo:visible"
                                                         : "plasmo:invisible plasmo:group-hover:visible"
@@ -402,76 +437,87 @@ export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
                                                     removeTab(tab.id);
                                                 }}
                                             >
-                                                <X className="plasmo:size-4" />
+                                                <X className="plasmo:size-3 plasmo:lg:size-4" />
                                             </Button>
                                         )}
                                     </div>
                                 ))}
                                 <Button
                                     variant="outline"
-                                    size="icon"
+                                    size={isSidePanel ? "icon-sm" : "icon"}
                                     onClick={addTab}
                                     className="plasmo:cursor-pointer"
                                 >
-                                    <Plus className="plasmo:size-6" />
+                                    <Plus className="plasmo:size-4 plasmo:lg:size-6" />
                                 </Button>
                             </div>
 
-                            <div className="plasmo:col-span-1 plasmo:flex plasmo:items-center plasmo:justify-end plasmo:gap-2">
-                                <div className="plasmo:flex plasmo:items-center plasmo:gap-2">
-                                    <CopyDropdown data={activeTab.result} isFetching={loading} />
-                                    <DownloadDropdown
-                                        data={activeTab.result}
-                                        isFetching={loading}
-                                    />
-                                    <Button onClick={toggleTheme} variant="ghost" size="sm">
+                            <div className="plasmo:flex plasmo:items-center plasmo:justify-end plasmo:gap-1 plasmo:lg:gap-2 plasmo:flex-shrink-0">
+                                <CopyDropdown data={activeTab.result} isFetching={loading} />
+                                <DownloadDropdown data={activeTab.result} isFetching={loading} />
+                                <Button
+                                    onClick={handleToggleDisplayMode}
+                                    variant="ghost"
+                                    size="icon"
+                                    title={
+                                        displayMode === "dialog"
+                                            ? "Switch to side panel"
+                                            : "Switch to dialog"
+                                    }
+                                >
+                                    <PanelRight className="plasmo:size-5" />
+                                </Button>
+                                {!isSidePanel && (
+                                    <Button onClick={toggleTheme} variant="ghost" size="icon">
                                         {theme === "dark-grey" ? (
                                             <Sun className="plasmo:size-5" />
                                         ) : (
                                             <Moon className="plasmo:size-5" />
                                         )}
                                     </Button>
-                                    <Select
-                                        value={dataFormat}
-                                        onValueChange={(newValue: "table" | "json" | "csv") => {
-                                            setDataFormat(newValue);
-                                        }}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Format" />
-                                        </SelectTrigger>
-                                        <SelectContent className={"plasmo:z-10002"}>
-                                            <SelectGroup className={"plasmo:py-1!"}>
-                                                {VIEW_TYPES.map((item) => {
-                                                    return (
-                                                        <SelectItem
-                                                            key={item.id}
-                                                            value={item.id}
-                                                            className={"plasmo:px-4! plasmo:py-2!"}
-                                                        >
-                                                            {item.label}
-                                                        </SelectItem>
-                                                    );
-                                                })}
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className={"plasmo:flex plasmo:items-center plasmo:gap-2"}>
-                                    <Button size="sm" onClick={handleFormat}>
-                                        Format
-                                    </Button>
-                                    <Button
-                                        size="icon"
-                                        variant="ghost"
-                                        className={
-                                            "plasmo:bg-green-400 plasmo:hover:bg-green-500 plasmo:active:bg-green-700 plasmo:cursor-pointer plasmo:text-black plasmo:hover:text-black"
-                                        }
-                                        onClick={handleSubmit}
-                                    >
-                                        <Play size={16} />
-                                    </Button>
-                                </div>
+                                )}
+                                <Select
+                                    value={dataFormat}
+                                    onValueChange={(newValue: "table" | "json" | "csv") => {
+                                        setDataFormat(newValue);
+                                    }}
+                                >
+                                    <SelectTrigger className="plasmo:w-auto">
+                                        <SelectValue placeholder="Format" />
+                                    </SelectTrigger>
+                                    <SelectContent className={"plasmo:z-10002"}>
+                                        <SelectGroup className={"plasmo:py-1!"}>
+                                            {VIEW_TYPES.map((item) => {
+                                                return (
+                                                    <SelectItem
+                                                        key={item.id}
+                                                        value={item.id}
+                                                        className={"plasmo:px-4! plasmo:py-2!"}
+                                                    >
+                                                        {item.label}
+                                                    </SelectItem>
+                                                );
+                                            })}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                <Button
+                                    size="sm"
+                                    onClick={handleFormat}
+                                    className="plasmo:hidden plasmo:lg:inline-flex"
+                                >
+                                    Format
+                                </Button>
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className={
+                                        "plasmo:bg-green-400 plasmo:hover:bg-green-500 plasmo:active:bg-green-700 plasmo:cursor-pointer plasmo:text-black plasmo:hover:text-black"
+                                    }
+                                    onClick={handleSubmit}
+                                >
+                                    <Play size={16} />
+                                </Button>
                             </div>
                         </div>
                         <div className="plasmo:flex-1 plasmo:overflow-hidden">
@@ -479,7 +525,7 @@ export const SqlEditor = ({ setIsOpen }: SqlEditorProps) => {
                                 ref={editorRef}
                                 value={activeTab.query}
                                 height="100%"
-                                extensions={[sql(getSuiteqlConfig())]}
+                                extensions={[sql(getSuiteqlConfig(cachedSchema))]}
                                 theme={theme === "light" ? [lightTheme] : [oneDark, darkGreyTheme]}
                                 onChange={updateQuery}
                                 className="plasmo:h-full plasmo:rounded-lg plasmo:border plasmo:border-gray-700"

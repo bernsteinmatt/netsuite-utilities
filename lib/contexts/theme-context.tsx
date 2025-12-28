@@ -61,7 +61,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     // Don't render children until theme is loaded to prevent flash
 
-    console.log("loaded", isLoaded);
     if (!isLoaded) {
         return null;
     }

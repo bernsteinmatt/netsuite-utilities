@@ -20,6 +20,7 @@ import { format as sqlFormat } from "sql-formatter";
 
 import { Storage } from "@plasmohq/storage";
 
+import { openSidePanel } from "~lib/chrome-utils";
 import { darkGreyTheme, lightTheme } from "~lib/codemirror-themes";
 import { LOCAL_QUERIES_KEY } from "~lib/constants";
 import { useTheme } from "~lib/contexts/theme-context";
@@ -169,10 +170,11 @@ export const SqlEditor = ({ setIsOpen, isSidePanel = false }: SqlEditorProps) =>
     const { theme, toggleTheme } = useTheme();
     const { displayMode, setDisplayMode } = useDisplayMode("sql-editor");
 
-    const handleToggleDisplayMode = useCallback(() => {
+    const handleToggleDisplayMode = useCallback(async () => {
         if (isSidePanel) {
             // Currently in side panel, switch to dialog mode
-            setDisplayMode("dialog");
+            // Wait for storage write to complete before closing
+            await setDisplayMode("dialog");
             // Tell content script to open dialog, then close side panel
             chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
                 const tabId = tabs[0]?.id;
@@ -183,11 +185,11 @@ export const SqlEditor = ({ setIsOpen, isSidePanel = false }: SqlEditorProps) =>
             window.close(); // Close the side panel
         } else {
             // Currently in dialog, switch to side panel mode
-            setDisplayMode("side-panel");
+            await setDisplayMode("side-panel");
             setIsOpen(false);
-            chrome.runtime.sendMessage({ action: "OPEN_SIDEPANEL", view: "sql-editor" });
+            openSidePanel("sql-editor");
         }
-    }, [isSidePanel, displayMode, setDisplayMode, setIsOpen]);
+    }, [isSidePanel, setDisplayMode, setIsOpen]);
 
     const getSelectedText = useCallback((): string | null => {
         const view = editorRef.current?.view;
@@ -270,7 +272,7 @@ export const SqlEditor = ({ setIsOpen, isSidePanel = false }: SqlEditorProps) =>
         } finally {
             setLoading(false);
         }
-    }, [activeTabId, activeTab.query, getSelectedText]);
+    }, [activeTabId, activeTab.query, getSelectedText, isSidePanel]);
 
     const addTab = () => {
         const usedNumbers = tabs

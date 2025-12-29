@@ -4,11 +4,12 @@ import { CommandSearch } from "~components/command-search/command-search";
 import { RecordDetail } from "~components/record-detail/record-detail";
 import { ScriptLogViewer } from "~components/script-log-viewer/script-log-viewer";
 import { SqlEditor } from "~components/sql-editor/sql-editor";
+import { isSidePanelOpen, openSidePanel } from "~lib/chrome-utils";
 import { TOOL_SHORTCUTS, type ToolType } from "~lib/constants";
 import { ThemeProvider } from "~lib/contexts/theme-context";
 import { useDisplayMode } from "~lib/hooks/use-display-mode";
-import { handleProxyFetch, type ProxyFetchRequest } from "~lib/proxy-fetch";
 import { useStorageBoolean } from "~lib/hooks/use-storage-boolean";
+import { handleProxyFetch, type ProxyFetchRequest } from "~lib/proxy-fetch";
 
 export type ActiveView = "none" | "sql-editor" | "script-log-viewer" | "command-search" | "record-detail";
 
@@ -67,15 +68,6 @@ export const NetsuiteUtilities = ({ mode, initialView = "none", onStylesNeeded }
 
             const key = e.key.toUpperCase();
 
-            // Check if side panel is currently open
-            const isSidePanelOpen = async (): Promise<boolean> => {
-                return new Promise((resolve) => {
-                    chrome.runtime.sendMessage({ action: "IS_SIDEPANEL_OPEN" }, (response) => {
-                        resolve(response?.isOpen ?? false);
-                    });
-                });
-            };
-
             // Check if this tool should open in side panel (either by preference or if panel is already open)
             const shouldOpenInSidePanel = async (tool: "sql-editor" | "script-log-viewer") => {
                 // If the tool's preference is side panel, use that
@@ -92,14 +84,14 @@ export const NetsuiteUtilities = ({ mode, initialView = "none", onStylesNeeded }
             } else if (key === TOOL_SHORTCUTS["sql-editor"].key && suiteQLEditorEnabled) {
                 e.preventDefault();
                 if (await shouldOpenInSidePanel("sql-editor")) {
-                    chrome.runtime.sendMessage({ action: "OPEN_SIDEPANEL", view: "sql-editor" });
+                    openSidePanel("sql-editor");
                 } else {
                     setActiveView("sql-editor");
                 }
             } else if (key === TOOL_SHORTCUTS["script-log-viewer"].key && scriptLogViewerEnabled) {
                 e.preventDefault();
                 if (await shouldOpenInSidePanel("script-log-viewer")) {
-                    chrome.runtime.sendMessage({ action: "OPEN_SIDEPANEL", view: "script-log-viewer" });
+                    openSidePanel("script-log-viewer");
                 } else {
                     setActiveView("script-log-viewer");
                 }
@@ -265,25 +257,17 @@ export const NetsuiteUtilities = ({ mode, initialView = "none", onStylesNeeded }
                                 return;
                             }
 
-                            // For sql-editor and script-log-viewer, check if side panel is open
+                            // For sql-editor and script-log-viewer, check if side panel should be used
                             if (tool === "sql-editor" || tool === "script-log-viewer") {
-                                const checkSidePanelOpen = (): Promise<boolean> => {
-                                    return new Promise((resolve) => {
-                                        chrome.runtime.sendMessage({ action: "IS_SIDEPANEL_OPEN" }, (response) => {
-                                            resolve(response?.isOpen ?? false);
-                                        });
-                                    });
-                                };
-
                                 // Check preference or if side panel is already open
                                 const shouldUseSidePanel =
                                     (tool === "sql-editor" && sqlEditorDisplayMode === "side-panel") ||
                                     (tool === "script-log-viewer" && scriptLogViewerDisplayMode === "side-panel") ||
-                                    (await checkSidePanelOpen());
+                                    (await isSidePanelOpen());
 
                                 if (shouldUseSidePanel) {
                                     handleClose();
-                                    chrome.runtime.sendMessage({ action: "OPEN_SIDEPANEL", view: tool });
+                                    openSidePanel(tool);
                                     return;
                                 }
                             }

@@ -13,6 +13,7 @@ import { useState } from "react";
 
 
 
+import { isSidePanelOpen, openSidePanel } from "~lib/chrome-utils";
 import { ThemeProvider } from "~lib/contexts/theme-context";
 import { useDisplayMode } from "~lib/hooks/use-display-mode";
 import { useStorageBoolean } from "~lib/hooks/use-storage-boolean";
@@ -76,20 +77,11 @@ const PopupContent = () => {
     const { displayMode: sqlEditorDisplayMode } = useDisplayMode("sql-editor");
     const { displayMode: scriptLogViewerDisplayMode } = useDisplayMode("script-log-viewer");
 
-    // Helper to check if side panel is currently open
-    const checkSidePanelOpen = (): Promise<boolean> => {
-        return new Promise((resolve) => {
-            chrome.runtime.sendMessage({ action: "IS_SIDEPANEL_OPEN" }, (response) => {
-                resolve(response?.isOpen ?? false);
-            });
-        });
-    };
-
     const handleOpenSqlEditor = async () => {
-        // Check if side panel is already open or if preference is side-panel
-        const shouldUseSidePanel = sqlEditorDisplayMode === "side-panel" || await checkSidePanelOpen();
+        // Open in side panel if preference is side-panel OR if side panel is already open
+        const shouldUseSidePanel = sqlEditorDisplayMode === "side-panel" || (await isSidePanelOpen());
         if (shouldUseSidePanel) {
-            chrome.runtime.sendMessage({ action: "OPEN_SIDEPANEL", view: "sql-editor" });
+            openSidePanel("sql-editor");
             window.close();
         } else {
             chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -109,10 +101,10 @@ const PopupContent = () => {
     };
 
     const handleOpenScriptLogViewer = async () => {
-        // Check if side panel is already open or if preference is side-panel
-        const shouldUseSidePanel = scriptLogViewerDisplayMode === "side-panel" || await checkSidePanelOpen();
+        // Open in side panel if preference is side-panel OR if side panel is already open
+        const shouldUseSidePanel = scriptLogViewerDisplayMode === "side-panel" || (await isSidePanelOpen());
         if (shouldUseSidePanel) {
-            chrome.runtime.sendMessage({ action: "OPEN_SIDEPANEL", view: "script-log-viewer" });
+            openSidePanel("script-log-viewer");
             window.close();
         } else {
             chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {

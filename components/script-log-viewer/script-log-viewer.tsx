@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 
 
+import { openSidePanel } from "~lib/chrome-utils";
 import { useTheme } from "~lib/contexts/theme-context";
 import { useDisplayMode } from "~lib/hooks/use-display-mode";
 import { isNetSuite } from "~lib/is-netsuite";
@@ -211,10 +212,11 @@ export const ScriptLogViewer = ({ setIsOpen, isSidePanel = false }: ScriptLogVie
     const { displayMode, setDisplayMode } = useDisplayMode("script-log-viewer");
     const buttonSize = isSidePanel ? "icon-sm" : "sm";
 
-    const handleToggleDisplayMode = useCallback(() => {
+    const handleToggleDisplayMode = useCallback(async () => {
         if (isSidePanel) {
             // Currently in side panel, switch to dialog mode
-            setDisplayMode("dialog");
+            // Wait for storage write to complete before closing
+            await setDisplayMode("dialog");
             // Tell content script to open dialog, then close side panel
             chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
                 const tabId = tabs[0]?.id;
@@ -225,11 +227,11 @@ export const ScriptLogViewer = ({ setIsOpen, isSidePanel = false }: ScriptLogVie
             window.close(); // Close the side panel
         } else {
             // Currently in dialog, switch to side panel mode
-            setDisplayMode("side-panel");
+            await setDisplayMode("side-panel");
             setIsOpen(false);
-            chrome.runtime.sendMessage({ action: "OPEN_SIDEPANEL", view: "script-log-viewer" });
+            openSidePanel("script-log-viewer");
         }
-    }, [isSidePanel, displayMode, setDisplayMode, setIsOpen]);
+    }, [isSidePanel, setDisplayMode, setIsOpen]);
 
     const storedState = useMemo(() => loadState(), []);
 

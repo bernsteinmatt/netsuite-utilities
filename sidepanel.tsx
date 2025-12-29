@@ -90,17 +90,8 @@ const SidePanel = () => {
         };
     }, []);
 
-    // Read the desired view from storage on mount and notify background that panel is open
+    // Read the desired view from storage on mount
     useEffect(() => {
-        // Get the current tab ID and notify background that side panel is open
-        // Use lastFocusedWindow since sidepanel doesn't have a "currentWindow" context
-        chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
-            const tabId = tabs[0]?.id;
-            if (tabId) {
-                chrome.runtime.sendMessage({ action: "SIDEPANEL_OPENED", tabId });
-            }
-        });
-
         chrome.storage.local.get("sidepanelView", (result) => {
             const view = result.sidepanelView as ActiveView;
             if (view === "sql-editor" || view === "script-log-viewer") {
@@ -110,16 +101,6 @@ const SidePanel = () => {
             }
             setViewReady(true);
         });
-
-        // Notify background when side panel is closed
-        return () => {
-            chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
-                const tabId = tabs[0]?.id;
-                if (tabId) {
-                    chrome.runtime.sendMessage({ action: "SIDEPANEL_CLOSED", tabId });
-                }
-            });
-        };
     }, []);
 
     // Pre-load theme and apply to document before rendering

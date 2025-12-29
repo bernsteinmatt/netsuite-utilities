@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/command";
 import { Code, ExternalLink, FileBraces, FileText, List, ScrollText, Terminal } from "lucide-react";
 import * as React from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Kbd, KbdGroup } from "~components/ui/kbd";
 import { Spinner } from "~components/ui/spinner";
@@ -384,45 +384,33 @@ export const CommandSearch = ({ setIsOpen, onOpenTool }: CommandSearchProps) => 
         }
     };
 
-    const onCustomerClick = () => {
-        onInputChange(`${mapping.customer.prefix}:`);
-    };
-    const onVendorClick = () => {
-        onInputChange(`${mapping.vendor.prefix}:`);
-    };
-    const onEntityClick = () => {
-        onInputChange(`${mapping.entity.prefix}:`);
-    };
-    const onEmployeeClick = () => {
-        onInputChange(`${mapping.employee.prefix}:`);
-    };
-    const onTransactionClick = () => {
-        onInputChange(`${mapping.transaction.prefix}:`);
-    };
-    const onCustomRecordDefinitionClick = () => {
-        onInputChange(`${mapping.customRecordDefinition.prefix}:`);
-    };
-    const onCustomListDefinitionClick = () => {
-        onInputChange(`${mapping.customListDefinition.prefix}:`);
-    };
+    const onSuggestionClick = useCallback(
+        (prefix: string) => {
+            onInputChange(`${prefix}:`);
+        },
+        [onInputChange]
+    );
 
-    const suggestions = [
-        { id: "customer", label: "Search for a customer", onSelect: onCustomerClick },
-        { id: "vendor", label: "Search for a vendor", onSelect: onVendorClick },
-        { id: "employee", label: "Search for an employee", onSelect: onEmployeeClick },
-        { id: "entity", label: "Search for an entity", onSelect: onEntityClick },
-        { id: "transaction", label: "Search for a transaction", onSelect: onTransactionClick },
-        {
-            id: "customRecordDefinition",
-            label: "Search for a custom record definition",
-            onSelect: onCustomRecordDefinitionClick,
-        },
-        {
-            id: "customListDefinition",
-            label: "Search for a custom list definition",
-            onSelect: onCustomListDefinitionClick,
-        },
-    ];
+    const suggestions = useMemo(
+        () => [
+            { id: "customer", label: "Search for a customer", onSelect: () => onSuggestionClick(mapping.customer.prefix) },
+            { id: "vendor", label: "Search for a vendor", onSelect: () => onSuggestionClick(mapping.vendor.prefix) },
+            { id: "employee", label: "Search for an employee", onSelect: () => onSuggestionClick(mapping.employee.prefix) },
+            { id: "entity", label: "Search for an entity", onSelect: () => onSuggestionClick(mapping.entity.prefix) },
+            { id: "transaction", label: "Search for a transaction", onSelect: () => onSuggestionClick(mapping.transaction.prefix) },
+            {
+                id: "customRecordDefinition",
+                label: "Search for a custom record definition",
+                onSelect: () => onSuggestionClick(mapping.customRecordDefinition.prefix),
+            },
+            {
+                id: "customListDefinition",
+                label: "Search for a custom list definition",
+                onSelect: () => onSuggestionClick(mapping.customListDefinition.prefix),
+            },
+        ],
+        [onSuggestionClick]
+    );
 
     const fetchData = async ({ query, type, requestId }) => {
         const { data, error } = await fetchQuery<{
@@ -662,7 +650,7 @@ export const CommandSearch = ({ setIsOpen, onOpenTool }: CommandSearchProps) => 
                                             window.open(defaultRowUrl);
                                             return;
                                         }
-                                        const { error, url: recordUrl } = await resolveRecordUrl({
+                                        const { url: recordUrl } = await resolveRecordUrl({
                                             recordId: row.id,
                                             recordType: row.recordtype,
                                         });

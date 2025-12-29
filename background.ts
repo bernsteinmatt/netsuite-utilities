@@ -1,10 +1,15 @@
 // Background script for handling side panel operations
 
-// Track which tabs have the side panel open
-const sidePanelOpenTabs = new Set<number>();
-
 // Ensure the popup opens on action click, not the side panel
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
+
+// Check if side panel is currently open using chrome.runtime.getContexts API
+const isSidePanelOpen = async (): Promise<boolean> => {
+    const contexts = await chrome.runtime.getContexts({
+        contextTypes: [chrome.runtime.ContextType.SIDE_PANEL],
+    });
+    return contexts.length > 0;
+};
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "OPEN_SIDEPANEL") {
@@ -17,8 +22,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             chrome.sidePanel
                 .open({ tabId })
                 .then(() => {
-                    sidePanelOpenTabs.add(tabId);
-                    // Also send a message to switch views if the panel is already open
+                    // Send a message to switch views if the panel is already open
                     // This is safe to send even if the panel just opened (it will just set the view)
                     chrome.runtime.sendMessage({ action: "SIDEPANEL_SET_VIEW", view });
                     sendResponse({ success: true });
@@ -47,36 +51,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return true; // Keep message channel open for async response
     }
 
-    // Check if side panel is open for the current tab
+    // Check if side panel is open using the reliable getContexts API
     if (message.action === "IS_SIDEPANEL_OPEN") {
-        // Use lastFocusedWindow for consistency with sidepanel tracking
-        chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
-            const activeTabId = tabs[0]?.id;
-            const isOpen = activeTabId ? sidePanelOpenTabs.has(activeTabId) : false;
+        isSidePanelOpen().then((isOpen) => {
             sendResponse({ isOpen });
         });
         return true; // Keep channel open for async response
     }
-
-    // Side panel notifies when it's opened/closed
-    if (message.action === "SIDEPANEL_OPENED") {
-        const tabId = message.tabId;
-        if (tabId) {
-            sidePanelOpenTabs.add(tabId);
-        }
-    }
-
-    if (message.action === "SIDEPANEL_CLOSED") {
-        const tabId = message.tabId;
-        if (tabId) {
-            sidePanelOpenTabs.delete(tabId);
-        }
-    }
-});
-
-// Clean up when tabs are closed
-chrome.tabs.onRemoved.addListener((tabId) => {
-    sidePanelOpenTabs.delete(tabId);
 });
 
 export {};

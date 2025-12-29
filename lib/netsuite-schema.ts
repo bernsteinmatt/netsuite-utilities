@@ -167,7 +167,8 @@ export const fetchNetSuiteSchema = async (
 };
 
 // Storage key for cached schema
-const storage = new Storage();
+// Use local storage area for schema since it can be large (sync has 100KB limit, local has ~10MB)
+const storage = new Storage({ area: "local" });
 const SCHEMA_STORAGE_KEY = "suiteql-schema";
 
 export const saveSchema = (schema: Schema): void => {

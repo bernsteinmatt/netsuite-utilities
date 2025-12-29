@@ -3,6 +3,9 @@
 // Track which tabs have the side panel open
 const sidePanelOpenTabs = new Set<number>();
 
+// Ensure the popup opens on action click, not the side panel
+chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "OPEN_SIDEPANEL") {
         const view = message.view || "none";

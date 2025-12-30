@@ -45,7 +45,7 @@ function DialogContent({
 }) {
     return (
         <DialogPortal data-slot="dialog-portal">
-            <DialogOverlay />
+            <DialogOverlay className={"plasmo:z-1000"}/>
             <DialogPrimitive.Content
                 data-slot="dialog-content"
                 className={cn(

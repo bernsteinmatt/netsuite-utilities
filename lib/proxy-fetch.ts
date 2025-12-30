@@ -55,10 +55,7 @@ export const isSidePanelContext = (): boolean => {
  * 4. Content script returns serialized response
  * 5. This function wraps the response in a Response-like object
  */
-export const proxyFetch = async (
-    url: string,
-    options?: RequestInit
-): Promise<Response> => {
+export const proxyFetch = async (url: string, options?: RequestInit): Promise<Response> => {
     return new Promise((resolve, reject) => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const tabId = tabs[0]?.id;
@@ -134,9 +131,7 @@ const serializeRequestInit = (options?: RequestInit): SerializedRequestInit | un
  * Handler for PROXY_FETCH messages in the content script.
  * This performs the actual fetch using the page's authentication context.
  */
-export const handleProxyFetch = async (
-    payload: ProxyFetchRequest
-): Promise<ProxyFetchResponse> => {
+export const handleProxyFetch = async (payload: ProxyFetchRequest): Promise<ProxyFetchResponse> => {
     try {
         // If URL is relative, prepend the current origin
         let fullUrl = payload.url;

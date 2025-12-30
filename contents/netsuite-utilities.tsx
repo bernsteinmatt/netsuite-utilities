@@ -26,32 +26,30 @@ export const getRootContainer: PlasmoGetRootContainer = () => {
 const ContentScript = () => {
     const [stylesInjected, setStylesInjected] = useState(false);
 
-    const handleStylesNeeded = useCallback((needed: boolean) => {
-        const styleId = "netsuite-utilities-styles";
+    const handleStylesNeeded = useCallback(
+        (needed: boolean) => {
+            const styleId = "netsuite-utilities-styles";
 
-        if (needed && !stylesInjected) {
-            if (!document.getElementById(styleId)) {
-                const styleElement = document.createElement("style");
-                styleElement.id = styleId;
-                styleElement.textContent = cssText;
-                document.head.appendChild(styleElement);
+            if (needed && !stylesInjected) {
+                if (!document.getElementById(styleId)) {
+                    const styleElement = document.createElement("style");
+                    styleElement.id = styleId;
+                    styleElement.textContent = cssText;
+                    document.head.appendChild(styleElement);
+                }
+                setStylesInjected(true);
+            } else if (!needed && stylesInjected) {
+                const existingStyle = document.getElementById(styleId);
+                if (existingStyle) {
+                    existingStyle.remove();
+                }
+                setStylesInjected(false);
             }
-            setStylesInjected(true);
-        } else if (!needed && stylesInjected) {
-            const existingStyle = document.getElementById(styleId);
-            if (existingStyle) {
-                existingStyle.remove();
-            }
-            setStylesInjected(false);
-        }
-    }, [stylesInjected]);
-
-    return (
-        <NetsuiteUtilities
-            mode="content"
-            onStylesNeeded={handleStylesNeeded}
-        />
+        },
+        [stylesInjected]
     );
+
+    return <NetsuiteUtilities mode="content" onStylesNeeded={handleStylesNeeded} />;
 };
 
 export default ContentScript;

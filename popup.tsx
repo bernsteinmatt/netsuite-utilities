@@ -1,26 +1,23 @@
-
-
-
 import "~style.css";
-
-
 
 import { ThemeSelector } from "@/components/theme-selector";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Database, FileCode2, Package, ScrollText, Search, Settings } from "lucide-react";
+import {
+    ArrowLeft,
+    Database,
+    FileCode2,
+    Package,
+    ScrollText,
+    Search,
+    Settings,
+} from "lucide-react";
 import { useState } from "react";
-
-
 
 import { isSidePanelOpen, openSidePanel } from "~lib/chrome-utils";
 import { ThemeProvider } from "~lib/contexts/theme-context";
 import { useDisplayMode } from "~lib/hooks/use-display-mode";
 import { useStorageBoolean } from "~lib/hooks/use-storage-boolean";
-
-
-
-
 
 const PopupContent = () => {
     const [view, setView] = useState<"main" | "settings">("main");
@@ -147,16 +144,16 @@ const PopupContent = () => {
         return (
             <>
                 <div className="plasmo:flex plasmo:flex-col plasmo:justify-between plasmo:gap-1 plasmo:bg-card plasmo:p-2">
-                    <div
-                        className={
-                            "plasmo:flex plasmo:items-center plasmo:gap-2"
-                        }
-                    >
+                    <div className={"plasmo:flex plasmo:items-center plasmo:gap-2"}>
                         <h1 className="plasmo-text-base-content plasmo:text-lg plasmo:font-semibold">
                             NetSuite Utilities
                         </h1>
                         <ThemeSelector />
-                        <div className={"plasmo:flex plasmo:flex-row plasmo:justify-end plasmo:flex-1"}>
+                        <div
+                            className={
+                                "plasmo:flex plasmo:flex-row plasmo:justify-end plasmo:flex-1"
+                            }
+                        >
                             <a
                                 href="https://buymeacoffee.com/matthewbernstein"
                                 target="_blank"

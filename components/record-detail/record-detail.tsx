@@ -14,6 +14,8 @@ import {
 import type React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { SupportLinks } from "~components/ui/support-links";
+
 interface RecordDetailProps {
     setIsOpen: (open: boolean) => void;
 }
@@ -258,8 +260,14 @@ const JsonNode = ({
     if (value === null || value === undefined) {
         return (
             <div className="plasmo:flex plasmo:items-center plasmo:gap-1 plasmo:py-px!">
-                {name && <span className="plasmo:text-black plasmo:dark:text-purple-400">{highlightMatch(name)}:</span>}
-                <span className="plasmo:text-rose-700 plasmo:dark:text-red-400 plasmo:italic">null</span>
+                {name && (
+                    <span className="plasmo:text-black plasmo:dark:text-purple-400">
+                        {highlightMatch(name)}:
+                    </span>
+                )}
+                <span className="plasmo:text-rose-700 plasmo:dark:text-red-400 plasmo:italic">
+                    null
+                </span>
             </div>
         );
     }
@@ -289,7 +297,11 @@ const JsonNode = ({
     if (isEmpty) {
         return (
             <div className="plasmo:flex plasmo:items-center plasmo:gap-1 plasmo:py-px!">
-                {name && <span className="plasmo:text-black plasmo:dark:text-purple-400">{highlightMatch(name)}:</span>}
+                {name && (
+                    <span className="plasmo:text-black plasmo:dark:text-purple-400">
+                        {highlightMatch(name)}:
+                    </span>
+                )}
                 <span className="plasmo:text-muted-foreground">{isArray ? "[]" : "{}"}</span>
             </div>
         );
@@ -307,7 +319,11 @@ const JsonNode = ({
                     ) : (
                         <ChevronRight className="plasmo:size-4 plasmo:shrink-0" />
                     )}
-                    {name && <span className="plasmo:text-black plasmo:dark:text-purple-400">{highlightMatch(name)}</span>}
+                    {name && (
+                        <span className="plasmo:text-black plasmo:dark:text-purple-400">
+                            {highlightMatch(name)}
+                        </span>
+                    )}
                     <span className="plasmo:text-muted-foreground plasmo:text-sm">
                         {isArray ? `[${entries.length}]` : `{${entries.length}}`}
                     </span>
@@ -589,6 +605,7 @@ export const RecordDetail = ({ setIsOpen }: RecordDetailProps) => {
                             </div>
                         )}
                     </div>
+                    <SupportLinks />
                 </DialogContent>
             </Dialog>
         </div>

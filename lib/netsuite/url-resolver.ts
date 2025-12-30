@@ -14,12 +14,7 @@ export const resolveRecordUrl = async (options: {
     }
 
     try {
-        const params = JSON.stringify([
-            "RECORD",
-            recordType,
-            recordId,
-            isEditMode ? "EDIT" : null,
-        ]);
+        const params = JSON.stringify(["RECORD", recordType, recordId, isEditMode ? "EDIT" : null]);
 
         const body = new URLSearchParams({
             jrid: "1",

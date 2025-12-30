@@ -4,10 +4,19 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { ChevronsDownUp, ChevronsUpDown, FileText, Filter, Moon, PanelRight, RotateCw, Sun, Trash2, X } from "lucide-react";
+import {
+    ChevronsDownUp,
+    ChevronsUpDown,
+    FileText,
+    Filter,
+    Moon,
+    PanelRight,
+    RotateCw,
+    Sun,
+    Trash2,
+    X,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-
 
 import { openSidePanel } from "~lib/chrome-utils";
 import { useTheme } from "~lib/contexts/theme-context";
@@ -16,12 +25,9 @@ import { isNetSuite } from "~lib/is-netsuite";
 import { executeQuery } from "~lib/netsuite";
 import { isSidePanelContext } from "~lib/proxy-fetch";
 
-
-
 import { LOCAL_STORAGE_KEY } from "./constants";
 import { LogRow } from "./log-row";
 import { logTypeOptions, scriptLogMockData, scriptOptions } from "./mock-data";
-
 
 interface ScriptLogViewerProps {
     setIsOpen: (open: boolean) => void;

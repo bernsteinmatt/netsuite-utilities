@@ -8,7 +8,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Kbd, KbdGroup } from "@/components/ui/kbd";
 import { isNetSuite } from "@/lib/is-netsuite";
-import { clearSchema, fetchNetSuiteSchema, loadSchema, saveSchema, type Schema } from "@/lib/netsuite-schema";
+import {
+    clearSchema,
+    fetchNetSuiteSchema,
+    loadSchema,
+    saveSchema,
+    type Schema,
+} from "@/lib/netsuite-schema";
 import { ExternalLink, HelpCircle, Keyboard, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 

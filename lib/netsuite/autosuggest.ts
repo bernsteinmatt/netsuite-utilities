@@ -17,11 +17,41 @@ interface AutosuggestResponse {
 
 // Mock autosuggest data for development
 const mockAutosuggestResults: AutosuggestResult[] = [
-    { sname: "Test Customer", key: "/app/common/entity/custjob.nl?id=1491", descr: "Customer", bedit: "T", dashurl: "/app/center/card.nl?sc=-69&entityid=1491" },
-    { sname: "Test Vendor", key: "/app/common/entity/vendor.nl?id=1234", descr: "Vendor", bedit: "T", dashurl: "" },
-    { sname: "Test Employee", key: "/app/common/entity/entity.nl?id=1511", descr: "Employee", bedit: "T", dashurl: "" },
-    { sname: "Test Transaction", key: "/app/accounting/transactions/salesord.nl?id=5678", descr: "Sales Order", bedit: "T", dashurl: "" },
-    { sname: "Test Project", key: "/app/common/custom/custrecordentry.nl?rectype=889&id=1", descr: "Project Tracker", bedit: "T", dashurl: "" },
+    {
+        sname: "Test Customer",
+        key: "/app/common/entity/custjob.nl?id=1491",
+        descr: "Customer",
+        bedit: "T",
+        dashurl: "/app/center/card.nl?sc=-69&entityid=1491",
+    },
+    {
+        sname: "Test Vendor",
+        key: "/app/common/entity/vendor.nl?id=1234",
+        descr: "Vendor",
+        bedit: "T",
+        dashurl: "",
+    },
+    {
+        sname: "Test Employee",
+        key: "/app/common/entity/entity.nl?id=1511",
+        descr: "Employee",
+        bedit: "T",
+        dashurl: "",
+    },
+    {
+        sname: "Test Transaction",
+        key: "/app/accounting/transactions/salesord.nl?id=5678",
+        descr: "Sales Order",
+        bedit: "T",
+        dashurl: "",
+    },
+    {
+        sname: "Test Project",
+        key: "/app/common/custom/custrecordentry.nl?rectype=889&id=1",
+        descr: "Project Tracker",
+        bedit: "T",
+        dashurl: "",
+    },
 ];
 
 export const fetchAutosuggest = async (

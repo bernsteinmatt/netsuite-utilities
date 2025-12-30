@@ -1,23 +1,13 @@
-
-
-
 import "@/style.css";
-
-
 
 import { useEffect, useState } from "react";
 
-
-
 import { Storage } from "@plasmohq/storage";
 
-
-
-import { NetsuiteUtilities, type ActiveView } from "~components/netsuite-utilities/netsuite-utilities";
-
-
-
-
+import {
+    NetsuiteUtilities,
+    type ActiveView,
+} from "~components/netsuite-utilities/netsuite-utilities";
 
 const storage = new Storage();
 
@@ -32,7 +22,6 @@ const Parent = ({ children }) => {
         </div>
     );
 };
-
 
 const SidePanel = () => {
     const [initialView, setInitialView] = useState<ActiveView>("none");
@@ -59,7 +48,11 @@ const SidePanel = () => {
         checkActiveTab();
 
         // Listen for tab updates (URL changes, loading complete, etc.)
-        const handleTabUpdate = (_tabId: number, changeInfo: chrome.tabs.TabChangeInfo, tab: chrome.tabs.Tab) => {
+        const handleTabUpdate = (
+            _tabId: number,
+            changeInfo: chrome.tabs.TabChangeInfo,
+            tab: chrome.tabs.Tab
+        ) => {
             // Only respond to tabs in our window that are active
             if (tab.windowId === currentWindowId && tab.active) {
                 // Check on URL change or when loading completes

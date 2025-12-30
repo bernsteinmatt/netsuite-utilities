@@ -26,4 +26,3 @@ export const TOOL_SHORTCUTS = {
 } as const;
 
 export type ToolType = "sql-editor" | "script-log-viewer" | "load-modules" | "record-detail";
-

@@ -15,10 +15,7 @@ export interface FlatNavMenuItem {
     breadcrumb: string;
 }
 
-const flattenNavMenu = (
-    items: NavMenuItem[],
-    breadcrumb: string[] = []
-): FlatNavMenuItem[] => {
+const flattenNavMenu = (items: NavMenuItem[], breadcrumb: string[] = []): FlatNavMenuItem[] => {
     const result: FlatNavMenuItem[] = [];
 
     for (const item of items) {
@@ -97,20 +94,17 @@ export const fetchNavMenuData = async (): Promise<{
         }
 
         const timestamp = Date.now();
-        const response = await fetch(
-            `/app/center/NLNavMenuData.nl?_=${timestamp}`,
-            {
-                headers: {
-                    accept: "application/json; q=1.0, text/*; q=0.8, */*; q=0.1",
-                    "cache-control": "no-cache",
-                    pragma: "no-cache",
-                    "x-requested-with": "XMLHttpRequest",
-                },
-                method: "GET",
-                mode: "cors",
-                credentials: "include",
-            }
-        );
+        const response = await fetch(`/app/center/NLNavMenuData.nl?_=${timestamp}`, {
+            headers: {
+                accept: "application/json; q=1.0, text/*; q=0.8, */*; q=0.1",
+                "cache-control": "no-cache",
+                pragma: "no-cache",
+                "x-requested-with": "XMLHttpRequest",
+            },
+            method: "GET",
+            mode: "cors",
+            credentials: "include",
+        });
 
         if (!response.ok) {
             throw new Error(`Failed to fetch nav menu: ${response.status}`);

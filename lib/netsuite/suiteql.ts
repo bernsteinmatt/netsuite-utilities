@@ -100,7 +100,10 @@ export const fetchQuery = async <T = Record<string, unknown>>(
     query: string,
     options: { mockData?: T[]; timeout?: number } = {}
 ): Promise<{ error: string | null; data: T[] | null }> => {
-    const { error, data } = await executeQuery(query, options as { mockData?: any[]; timeout?: number });
+    const { error, data } = await executeQuery(
+        query,
+        options as { mockData?: any[]; timeout?: number }
+    );
 
     if (error) {
         return { error, data: null };

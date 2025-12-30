@@ -9,12 +9,13 @@ import {
     CommandLoading,
     CommandSeparator,
 } from "@/components/ui/command";
-import { Code, Coffee, ExternalLink, FileBraces, FileText, Github, List, ScrollText, Terminal } from "lucide-react";
+import { Code, ExternalLink, FileBraces, FileText, List, ScrollText, Terminal } from "lucide-react";
 import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Kbd, KbdGroup } from "~components/ui/kbd";
 import { Spinner } from "~components/ui/spinner";
+import { SupportLinks } from "~components/ui/support-links";
 import { TOOL_SHORTCUTS, type ToolType } from "~lib/constants";
 import { debugLog } from "~lib/debug";
 import {
@@ -393,11 +394,31 @@ export const CommandSearch = ({ setIsOpen, onOpenTool }: CommandSearchProps) => 
 
     const suggestions = useMemo(
         () => [
-            { id: "customer", label: "Search for a customer", onSelect: () => onSuggestionClick(mapping.customer.prefix) },
-            { id: "vendor", label: "Search for a vendor", onSelect: () => onSuggestionClick(mapping.vendor.prefix) },
-            { id: "employee", label: "Search for an employee", onSelect: () => onSuggestionClick(mapping.employee.prefix) },
-            { id: "entity", label: "Search for an entity", onSelect: () => onSuggestionClick(mapping.entity.prefix) },
-            { id: "transaction", label: "Search for a transaction", onSelect: () => onSuggestionClick(mapping.transaction.prefix) },
+            {
+                id: "customer",
+                label: "Search for a customer",
+                onSelect: () => onSuggestionClick(mapping.customer.prefix),
+            },
+            {
+                id: "vendor",
+                label: "Search for a vendor",
+                onSelect: () => onSuggestionClick(mapping.vendor.prefix),
+            },
+            {
+                id: "employee",
+                label: "Search for an employee",
+                onSelect: () => onSuggestionClick(mapping.employee.prefix),
+            },
+            {
+                id: "entity",
+                label: "Search for an entity",
+                onSelect: () => onSuggestionClick(mapping.entity.prefix),
+            },
+            {
+                id: "transaction",
+                label: "Search for a transaction",
+                onSelect: () => onSuggestionClick(mapping.transaction.prefix),
+            },
             {
                 id: "customRecordDefinition",
                 label: "Search for a custom record definition",
@@ -901,26 +922,7 @@ export const CommandSearch = ({ setIsOpen, onOpenTool }: CommandSearchProps) => 
                     </CommandItem>
                 </CommandGroup>
             </CommandList>
-            <div className="plasmo:flex plasmo:items-center plasmo:justify-center plasmo:gap-4 plasmo:border-t plasmo:border-border plasmo:py-2 plasmo:px-4">
-                <a
-                    href="https://github.com/bernsteinmatt/netsuite-utilities"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="plasmo:flex plasmo:items-center plasmo:gap-1.5 plasmo:text-xs plasmo:text-muted-foreground plasmo:hover:text-foreground plasmo:transition-colors"
-                >
-                    <Github className="plasmo:size-4" />
-                    <span>GitHub</span>
-                </a>
-                <a
-                    href="https://buymeacoffee.com/matthewbernstein"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="plasmo:flex plasmo:items-center plasmo:gap-1.5 plasmo:text-xs plasmo:text-muted-foreground plasmo:hover:text-foreground plasmo:transition-colors"
-                >
-                    <Coffee className="plasmo:size-4" />
-                    <span>Buy Me a Coffee</span>
-                </a>
-            </div>
+            <SupportLinks />
         </CommandDialog>
     );
 };

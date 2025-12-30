@@ -3,7 +3,14 @@ import { CopyDropdown } from "@/components/sql-editor/copy-dropdown";
 import { DownloadDropdown } from "@/components/sql-editor/download-dropdown";
 import { HelpDropdown } from "@/components/sql-editor/help-dropdown";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 // NOTE: react-resizable-panels does not work with Shadow DOM because it attaches pointer event
 // listeners to document.body. See content.tsx getRootContainer() for Shadow DOM bypass.
@@ -15,8 +22,6 @@ import clsx from "clsx";
 import { Database, Moon, PanelRight, Play, Plus, Sun, X } from "lucide-react";
 import React, { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { format as sqlFormat } from "sql-formatter";
-
-
 
 import { Storage } from "@plasmohq/storage";
 
@@ -31,12 +36,9 @@ import { executeQuery } from "~lib/netsuite";
 import { loadSchema, type Schema } from "~lib/netsuite-schema";
 import { formatTime } from "~lib/utils";
 
-
-
 import { DataContent } from "./data-content";
 import { mockData } from "./mock-data";
 import { getSuiteqlConfig } from "./suiteql-completions";
-
 
 const { Panel, PanelGroup, PanelResizeHandle } = ResizablePanels;
 
@@ -240,7 +242,11 @@ export const SqlEditor = ({ setIsOpen, isSidePanel = false }: SqlEditorProps) =>
 
             console.log("🟣 [SqlEditor] Calling executeQuery");
             const { error, data } = await executeQuery(queryToExecute);
-            console.log("🟣 [SqlEditor] executeQuery returned", { error, data, dataKeys: data ? Object.keys(data) : null });
+            console.log("🟣 [SqlEditor] executeQuery returned", {
+                error,
+                data,
+                dataKeys: data ? Object.keys(data) : null,
+            });
 
             if (error) {
                 setTabs((prevTabs) =>

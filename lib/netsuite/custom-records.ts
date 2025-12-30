@@ -13,9 +13,30 @@ export interface CustomRecordType {
 
 // Mock custom record types for development
 const mockCustomRecordTypes: CustomRecordType[] = [
-    { id: 889, name: "Project Tracker", scriptid: "customrecord_project_tracker", allowquicksearch: "T", nopermissionrequired: "F", usepermissions: "T" },
-    { id: 890, name: "Task Log", scriptid: "customrecord_task_log", allowquicksearch: "T", nopermissionrequired: "F", usepermissions: "T" },
-    { id: 891, name: "Budget Item", scriptid: "customrecord_budget_item", allowquicksearch: "F", nopermissionrequired: "T", usepermissions: "F" },
+    {
+        id: 889,
+        name: "Project Tracker",
+        scriptid: "customrecord_project_tracker",
+        allowquicksearch: "T",
+        nopermissionrequired: "F",
+        usepermissions: "T",
+    },
+    {
+        id: 890,
+        name: "Task Log",
+        scriptid: "customrecord_task_log",
+        allowquicksearch: "T",
+        nopermissionrequired: "F",
+        usepermissions: "T",
+    },
+    {
+        id: 891,
+        name: "Budget Item",
+        scriptid: "customrecord_budget_item",
+        allowquicksearch: "F",
+        nopermissionrequired: "T",
+        usepermissions: "F",
+    },
 ];
 
 let cachedCustomRecordTypes: CustomRecordType[] | null = null;
@@ -86,10 +107,34 @@ export interface CustomRecordInstance {
 
 // Mock custom record instances for development
 const mockCustomRecordInstances: CustomRecordInstance[] = [
-    { id: 1, name: "Project Alpha", recordtypeid: 889, recordtypename: "Project Tracker", scriptid: "customrecord_project_tracker" },
-    { id: 2, name: "Project Beta", recordtypeid: 889, recordtypename: "Project Tracker", scriptid: "customrecord_project_tracker" },
-    { id: 1, name: "Task: Review Code", recordtypeid: 890, recordtypename: "Task Log", scriptid: "customrecord_task_log" },
-    { id: 2, name: "Task: Deploy App", recordtypeid: 890, recordtypename: "Task Log", scriptid: "customrecord_task_log" },
+    {
+        id: 1,
+        name: "Project Alpha",
+        recordtypeid: 889,
+        recordtypename: "Project Tracker",
+        scriptid: "customrecord_project_tracker",
+    },
+    {
+        id: 2,
+        name: "Project Beta",
+        recordtypeid: 889,
+        recordtypename: "Project Tracker",
+        scriptid: "customrecord_project_tracker",
+    },
+    {
+        id: 1,
+        name: "Task: Review Code",
+        recordtypeid: 890,
+        recordtypename: "Task Log",
+        scriptid: "customrecord_task_log",
+    },
+    {
+        id: 2,
+        name: "Task: Deploy App",
+        recordtypeid: 890,
+        recordtypename: "Task Log",
+        scriptid: "customrecord_task_log",
+    },
 ];
 
 const MAX_UNIONS_PER_BATCH = 10;

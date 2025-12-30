@@ -43,22 +43,19 @@ export const fetchPermissions = async (): Promise<{
             return { error: null, data: mockPermissions };
         }
 
-        const response = await fetch(
-            "/app/common/scripting/nlapijsonhandler.nl",
-            {
-                headers: {
-                    accept: "*/*",
-                    "cache-control": "no-cache",
-                    "content-type": "application/x-www-form-urlencoded",
-                    nsxmlhttprequest: "NSXMLHttpRequest",
-                    pragma: "no-cache",
-                },
-                body: "jrid=2&jrmethod=remoteObject.getPermissions&jrparams=%5B%5D",
-                method: "POST",
-                mode: "cors",
-                credentials: "include",
-            }
-        );
+        const response = await fetch("/app/common/scripting/nlapijsonhandler.nl", {
+            headers: {
+                accept: "*/*",
+                "cache-control": "no-cache",
+                "content-type": "application/x-www-form-urlencoded",
+                nsxmlhttprequest: "NSXMLHttpRequest",
+                pragma: "no-cache",
+            },
+            body: "jrid=2&jrmethod=remoteObject.getPermissions&jrparams=%5B%5D",
+            method: "POST",
+            mode: "cors",
+            credentials: "include",
+        });
 
         if (!response.ok) {
             throw new Error(`Failed to fetch permissions: ${response.status}`);

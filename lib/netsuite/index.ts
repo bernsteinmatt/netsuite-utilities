@@ -11,11 +11,7 @@ export {
 } from "./permissions";
 
 // Navigation menu
-export {
-    fetchNavMenuData,
-    type FlatNavMenuItem,
-    type NavMenuItem,
-} from "./navigation";
+export { fetchNavMenuData, type FlatNavMenuItem, type NavMenuItem } from "./navigation";
 
 // Custom records
 export {
@@ -27,11 +23,7 @@ export {
 } from "./custom-records";
 
 // Autosuggest/search
-export {
-    buildUberSearchUrl,
-    fetchAutosuggest,
-    type AutosuggestResult,
-} from "./autosuggest";
+export { buildUberSearchUrl, fetchAutosuggest, type AutosuggestResult } from "./autosuggest";
 
 // URL resolution
 export { resolveRecordUrl } from "./url-resolver";

@@ -1,12 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-
-
 import { Storage } from "@plasmohq/storage";
-
-
-
-
 
 type Theme = "light" | "dark-grey";
 

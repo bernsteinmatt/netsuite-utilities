@@ -11,7 +11,12 @@ import { useDisplayMode } from "~lib/hooks/use-display-mode";
 import { useStorageBoolean } from "~lib/hooks/use-storage-boolean";
 import { handleProxyFetch, type ProxyFetchRequest } from "~lib/proxy-fetch";
 
-export type ActiveView = "none" | "sql-editor" | "script-log-viewer" | "command-search" | "record-detail";
+export type ActiveView =
+    | "none"
+    | "sql-editor"
+    | "script-log-viewer"
+    | "command-search"
+    | "record-detail";
 
 export type RenderMode = "content" | "sidepanel";
 
@@ -23,7 +28,11 @@ interface NetsuiteUtilitiesProps {
     onStylesNeeded?: (needed: boolean) => void;
 }
 
-export const NetsuiteUtilities = ({ mode, initialView = "none", onStylesNeeded }: NetsuiteUtilitiesProps) => {
+export const NetsuiteUtilities = ({
+    mode,
+    initialView = "none",
+    onStylesNeeded,
+}: NetsuiteUtilitiesProps) => {
     const [activeView, setActiveViewState] = useState<ActiveView>(initialView);
 
     // Display mode settings (only relevant for content mode)
@@ -72,7 +81,8 @@ export const NetsuiteUtilities = ({ mode, initialView = "none", onStylesNeeded }
             const shouldOpenInSidePanel = async (tool: "sql-editor" | "script-log-viewer") => {
                 // If the tool's preference is side panel, use that
                 if (tool === "sql-editor" && sqlEditorDisplayMode === "side-panel") return true;
-                if (tool === "script-log-viewer" && scriptLogViewerDisplayMode === "side-panel") return true;
+                if (tool === "script-log-viewer" && scriptLogViewerDisplayMode === "side-panel")
+                    return true;
                 // If side panel is already open, use it regardless of preference
                 return await isSidePanelOpen();
             };
@@ -201,7 +211,8 @@ export const NetsuiteUtilities = ({ mode, initialView = "none", onStylesNeeded }
                             NetSuite Utilities
                         </h2>
                         <p className="plasmo:text-muted-foreground plasmo:text-sm plasmo:text-center">
-                            Use the keyboard shortcuts or toolbar buttons to open a tool in this panel.
+                            Use the keyboard shortcuts or toolbar buttons to open a tool in this
+                            panel.
                         </p>
                     </div>
                 </ThemeProvider>
@@ -261,8 +272,10 @@ export const NetsuiteUtilities = ({ mode, initialView = "none", onStylesNeeded }
                             if (tool === "sql-editor" || tool === "script-log-viewer") {
                                 // Check preference or if side panel is already open
                                 const shouldUseSidePanel =
-                                    (tool === "sql-editor" && sqlEditorDisplayMode === "side-panel") ||
-                                    (tool === "script-log-viewer" && scriptLogViewerDisplayMode === "side-panel") ||
+                                    (tool === "sql-editor" &&
+                                        sqlEditorDisplayMode === "side-panel") ||
+                                    (tool === "script-log-viewer" &&
+                                        scriptLogViewerDisplayMode === "side-panel") ||
                                     (await isSidePanelOpen());
 
                                 if (shouldUseSidePanel) {

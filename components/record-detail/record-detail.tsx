@@ -23,6 +23,8 @@ interface ParsedRecord {
     id: string | null;
     bodyFields: Record<string, unknown>;
     lineFields: Record<string, unknown[]>;
+    allFieldNames: string[];
+    sublistFieldNames: Record<string, string[]>;
 }
 
 /**
@@ -97,11 +99,17 @@ const formatRecord = (object: Record<string, unknown> | null): ParsedRecord | nu
         return null;
     }
 
+    // Parse all field names from the _fields attribute
+    const fieldsAttr = record._fields as string | undefined;
+    const allFieldNames = fieldsAttr ? fieldsAttr.split(",").map((f) => f.trim()) : [];
+
     const result: ParsedRecord = {
         recordType: null,
         id: null,
         bodyFields: {},
         lineFields: {},
+        allFieldNames,
+        sublistFieldNames: {},
     };
 
     for (const [key, value] of Object.entries(record)) {
@@ -113,6 +121,14 @@ const formatRecord = (object: Record<string, unknown> | null): ParsedRecord | nu
                     const sublistObj = sublist as Record<string, unknown>;
                     const name = sublistObj._name as string;
                     if (name) {
+                        // Capture sublist field names from _fields attribute
+                        const sublistFieldsAttr = sublistObj._fields as string | undefined;
+                        if (sublistFieldsAttr) {
+                            result.sublistFieldNames[name] = sublistFieldsAttr
+                                .split(",")
+                                .map((f) => f.trim());
+                        }
+
                         if (sublistObj.line) {
                             result.lineFields[name] = Array.isArray(sublistObj.line)
                                 ? sublistObj.line
@@ -132,7 +148,7 @@ const formatRecord = (object: Record<string, unknown> | null): ParsedRecord | nu
                 result.id = value as string;
                 break;
             case "_fields":
-                // Skip internal fields metadata
+                // Already processed above
                 break;
             default:
                 result.bodyFields[key] = value;
@@ -191,6 +207,8 @@ const filterRecord = (object: ParsedRecord, searchTerm: string): ParsedRecord =>
         id: object.id,
         bodyFields: deepFilter(object.bodyFields),
         lineFields: deepFilter(object.lineFields) as Record<string, unknown[]>,
+        allFieldNames: object.allFieldNames,
+        sublistFieldNames: object.sublistFieldNames,
     };
 };
 
@@ -367,6 +385,7 @@ export const RecordDetail = ({ setIsOpen }: RecordDetailProps) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
+    const [showEmptyFields, setShowEmptyFields] = useState(false);
 
     const loadRecord = useCallback(async () => {
         setLoading(true);
@@ -388,10 +407,44 @@ export const RecordDetail = ({ setIsOpen }: RecordDetailProps) => {
         loadRecord();
     }, [loadRecord]);
 
+    const recordWithEmptyFields = useMemo(() => {
+        if (!record || !showEmptyFields) return record;
+
+        // Add empty fields from allFieldNames that don't exist in bodyFields
+        const bodyFieldsWithEmpty = { ...record.bodyFields };
+        for (const fieldName of record.allFieldNames) {
+            if (!(fieldName in bodyFieldsWithEmpty) && !fieldName.startsWith("_")) {
+                bodyFieldsWithEmpty[fieldName] = null;
+            }
+        }
+
+        // Add empty fields to line items based on sublistFieldNames
+        const lineFieldsWithEmpty: Record<string, unknown[]> = {};
+        for (const [sublistName, lines] of Object.entries(record.lineFields)) {
+            const sublistFields = record.sublistFieldNames[sublistName] || [];
+            lineFieldsWithEmpty[sublistName] = lines.map((line) => {
+                const lineObj = line as Record<string, unknown>;
+                const lineWithEmpty = { ...lineObj };
+                for (const fieldName of sublistFields) {
+                    if (!(fieldName in lineWithEmpty) && !fieldName.startsWith("_")) {
+                        lineWithEmpty[fieldName] = null;
+                    }
+                }
+                return lineWithEmpty;
+            });
+        }
+
+        return {
+            ...record,
+            bodyFields: bodyFieldsWithEmpty,
+            lineFields: lineFieldsWithEmpty,
+        };
+    }, [record, showEmptyFields]);
+
     const filteredRecord = useMemo(() => {
-        if (!record || !searchTerm) return record;
-        return filterRecord(record, searchTerm);
-    }, [record, searchTerm]);
+        if (!recordWithEmptyFields || !searchTerm) return recordWithEmptyFields;
+        return filterRecord(recordWithEmptyFields, searchTerm);
+    }, [recordWithEmptyFields, searchTerm]);
 
     const [forceExpanded, setForceExpanded] = useState<boolean | undefined>(undefined);
 
@@ -417,6 +470,14 @@ export const RecordDetail = ({ setIsOpen }: RecordDetailProps) => {
                                 )}
                             </DialogTitle>
                             <div className="plasmo:flex plasmo:items-center plasmo:gap-1 plasmo:mr-8!">
+                                <Button
+                                    variant={showEmptyFields ? "secondary" : "ghost"}
+                                    size="sm"
+                                    onClick={() => setShowEmptyFields(!showEmptyFields)}
+                                    className="plasmo:cursor-pointer plasmo:h-8"
+                                >
+                                    {showEmptyFields ? "Hide Empty" : "Show Empty"}
+                                </Button>
                                 <Button
                                     variant="ghost"
                                     size="icon"

@@ -431,7 +431,7 @@ export const ScriptLogViewer = ({ setIsOpen, isSidePanel = false }: ScriptLogVie
     // Keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === "Escape") {
+            if (e.key === "Escape" && !isSidePanel) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
                 setIsOpen(false);
@@ -445,7 +445,7 @@ export const ScriptLogViewer = ({ setIsOpen, isSidePanel = false }: ScriptLogVie
 
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [setIsOpen, fetchLogs]);
+    }, [setIsOpen, fetchLogs, isSidePanel]);
 
     const updateFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
         setFilters((prev) => ({ ...prev, [key]: value }));

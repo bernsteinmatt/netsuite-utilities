@@ -333,7 +333,7 @@ export const SqlEditor = ({ setIsOpen, isSidePanel = false }: SqlEditorProps) =>
                 handleFormat();
                 return;
             }
-            if (event.key === "Escape") {
+            if (event.key === "Escape" && !isSidePanel) {
                 event.preventDefault();
                 event.stopImmediatePropagation();
                 setIsOpen(false);
@@ -346,7 +346,7 @@ export const SqlEditor = ({ setIsOpen, isSidePanel = false }: SqlEditorProps) =>
         return () => {
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, [handleFormat, handleSubmit, setIsOpen]);
+    }, [handleFormat, handleSubmit, setIsOpen, isSidePanel]);
 
     return (
         <div className="plasmo:bg-background plasmo:text-foreground plasmo:z-1001 plasmo:flex plasmo:flex-col plasmo:h-full plasmo:w-full">

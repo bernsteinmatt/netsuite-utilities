@@ -1,7 +1,7 @@
 {
     "name": "netsuite-utilities",
     "displayName": "NetSuite Utilities",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "Supercharge NetSuite with SuiteQL Editor, Script Log Viewer, Command Search, Record Detail viewer, and UI enhancements",
     "license": "MIT",
     "repository": {

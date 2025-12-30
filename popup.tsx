@@ -79,7 +79,8 @@ const PopupContent = () => {
 
     const handleOpenSqlEditor = async () => {
         // Open in side panel if preference is side-panel OR if side panel is already open
-        const shouldUseSidePanel = sqlEditorDisplayMode === "side-panel" || (await isSidePanelOpen());
+        const shouldUseSidePanel =
+            sqlEditorDisplayMode === "side-panel" || (await isSidePanelOpen());
         if (shouldUseSidePanel) {
             openSidePanel("sql-editor");
             window.close();
@@ -102,7 +103,8 @@ const PopupContent = () => {
 
     const handleOpenScriptLogViewer = async () => {
         // Open in side panel if preference is side-panel OR if side panel is already open
-        const shouldUseSidePanel = scriptLogViewerDisplayMode === "side-panel" || (await isSidePanelOpen());
+        const shouldUseSidePanel =
+            scriptLogViewerDisplayMode === "side-panel" || (await isSidePanelOpen());
         if (shouldUseSidePanel) {
             openSidePanel("script-log-viewer");
             window.close();
@@ -144,11 +146,30 @@ const PopupContent = () => {
     const Main = () => {
         return (
             <>
-                <div className="plasmo:flex plasmo:items-center plasmo:justify-between plasmo:gap-2 plasmo:bg-card plasmo:p-2">
-                    <h1 className="plasmo-text-base-content plasmo:text-lg plasmo:font-semibold">
-                        NetSuite Utilities
-                    </h1>
-                    <ThemeSelector />
+                <div className="plasmo:flex plasmo:flex-col plasmo:justify-between plasmo:gap-1 plasmo:bg-card plasmo:p-2">
+                    <div
+                        className={
+                            "plasmo:flex plasmo:items-center plasmo:gap-2"
+                        }
+                    >
+                        <h1 className="plasmo-text-base-content plasmo:text-lg plasmo:font-semibold">
+                            NetSuite Utilities
+                        </h1>
+                        <ThemeSelector />
+                        <div className={"plasmo:flex plasmo:flex-row plasmo:justify-end plasmo:flex-1"}>
+                            <a
+                                href="https://buymeacoffee.com/matthewbernstein"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <img
+                                    src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+                                    alt="Buy Me A Coffee"
+                                    style={{ height: "22px", width: "auto" }}
+                                />
+                            </a>
+                        </div>
+                    </div>
                 </div>
                 <div className="plasmo:flex plasmo:flex-col plasmo:gap-2 plasmo:p-2">
                     <button onClick={() => setView("settings")} className={mainItemClassName}>
@@ -310,7 +331,7 @@ function IndexPopup() {
     return (
         <ThemeProvider>
             <div className="plasmo:flex plasmo:items-center plasmo:justify-center plasmo:bg-background plasmo:text-foreground">
-                <div className="plasmo-bg-background plasmo-text-base-content plasmo:flex plasmo:w-64 plasmo:flex-col">
+                <div className="plasmo-bg-background plasmo-text-base-content plasmo:flex plasmo:w-76 plasmo:flex-col">
                     <PopupContent />
                 </div>
             </div>

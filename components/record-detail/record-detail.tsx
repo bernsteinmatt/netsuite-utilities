@@ -2,19 +2,23 @@ import { Button } from "@/components/ui/button";
 import { CopyButton } from "@/components/ui/copy-button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Spinner } from "@/components/ui/spinner";
 import {
-    AlertCircle,
-    ChevronDown,
-    ChevronRight,
-    ChevronsDownUp,
-    ChevronsUpDown,
-    ExternalLink,
-} from "lucide-react";
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
+import { AlertCircle, ChevronsDownUp, ChevronsUpDown, ExternalLink } from "lucide-react";
 import type React from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 
 import { SupportLinks } from "~components/ui/support-links";
+import { mergeReducer } from "~lib/merge-reducer";
+
+import { JsonNode } from "./json-node";
+import { SuiteQLRecordDetail } from "./suiteql-record-detail";
 
 interface RecordDetailProps {
     setIsOpen: (open: boolean) => void;
@@ -215,144 +219,6 @@ const filterRecord = (object: ParsedRecord, searchTerm: string): ParsedRecord =>
 };
 
 /**
- * Collapsible JSON node component
- */
-const JsonNode = ({
-    name,
-    value,
-    searchTerm,
-    defaultExpanded = false,
-    forceExpanded,
-}: {
-    name?: string;
-    value: unknown;
-    searchTerm: string;
-    defaultExpanded?: boolean;
-    forceExpanded?: boolean;
-}) => {
-    const [isExpanded, setIsExpanded] = useState(defaultExpanded);
-
-    // Sync with forceExpanded when it changes
-    useEffect(() => {
-        if (forceExpanded !== undefined) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setIsExpanded(forceExpanded);
-        }
-    }, [forceExpanded]);
-
-    const highlightMatch = (text: string): React.ReactNode => {
-        if (!searchTerm) return text;
-
-        const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
-        const parts = text.split(regex);
-
-        return parts.map((part, i) =>
-            regex.test(part) ? (
-                <span key={i} className="plasmo:bg-yellow-500/50 plasmo:rounded plasmo:px-0.5">
-                    {part}
-                </span>
-            ) : (
-                part
-            )
-        );
-    };
-
-    if (value === null || value === undefined) {
-        return (
-            <div className="plasmo:flex plasmo:items-center plasmo:gap-1 plasmo:py-px!">
-                {name && (
-                    <span className="plasmo:text-black plasmo:dark:text-purple-400">
-                        {highlightMatch(name)}:
-                    </span>
-                )}
-                <span className="plasmo:text-rose-700 plasmo:dark:text-red-400 plasmo:italic">
-                    null
-                </span>
-            </div>
-        );
-    }
-
-    if (typeof value !== "object") {
-        const stringValue = String(value);
-        return (
-            <div className="plasmo:flex plasmo:items-start plasmo:gap-1 plasmo:py-px!">
-                {name && (
-                    <span className="plasmo:text-black plasmo:dark:text-purple-400 plasmo:shrink-0">
-                        {highlightMatch(name)}:
-                    </span>
-                )}
-                <span className="plasmo:text-emerald-700 plasmo:dark:text-green-400 plasmo:whitespace-nowrap">
-                    {highlightMatch(stringValue)}
-                </span>
-            </div>
-        );
-    }
-
-    const isArray = Array.isArray(value);
-    const entries = isArray
-        ? (value as unknown[]).map((v, i) => [String(i), v] as [string, unknown])
-        : Object.entries(value as Record<string, unknown>);
-    const isEmpty = entries.length === 0;
-
-    if (isEmpty) {
-        return (
-            <div className="plasmo:flex plasmo:items-center plasmo:gap-1 plasmo:py-px!">
-                {name && (
-                    <span className="plasmo:text-black plasmo:dark:text-purple-400">
-                        {highlightMatch(name)}:
-                    </span>
-                )}
-                <span className="plasmo:text-muted-foreground">{isArray ? "[]" : "{}"}</span>
-            </div>
-        );
-    }
-
-    return (
-        <div className="plasmo:flex plasmo:flex-col">
-            <div className="plasmo:flex plasmo:items-center plasmo:group plasmo:flex-row plasmo:gap-2">
-                <button
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="plasmo:flex plasmo:items-center plasmo:gap-1 plasmo:py-px! plasmo:cursor-pointer plasmo:hover:bg-white/5 plasmo:rounded plasmo:text-left"
-                >
-                    {isExpanded ? (
-                        <ChevronDown className="plasmo:size-4 plasmo:shrink-0" />
-                    ) : (
-                        <ChevronRight className="plasmo:size-4 plasmo:shrink-0" />
-                    )}
-                    {name && (
-                        <span className="plasmo:text-black plasmo:dark:text-purple-400">
-                            {highlightMatch(name)}
-                        </span>
-                    )}
-                    <span className="plasmo:text-muted-foreground plasmo:text-sm">
-                        {isArray ? `[${entries.length}]` : `{${entries.length}}`}
-                    </span>
-                </button>
-                <CopyButton
-                    value={JSON.stringify(value, null, 2)}
-                    className="plasmo:size-6 plasmo:opacity-0 plasmo:group-hover:opacity-100 plasmo:transition-opacity"
-                    title={`Copy ${name || (isArray ? "array" : "object")}`}
-                />
-            </div>
-            {isExpanded && (
-                <div className="plasmo:ml-4! plasmo:pl-2! plasmo:border-l plasmo:border-gray-700">
-                    {entries.map(([key, val]) => (
-                        <JsonNode
-                            key={key}
-                            name={key}
-                            value={val}
-                            searchTerm={searchTerm}
-                            defaultExpanded={!!searchTerm}
-                            forceExpanded={forceExpanded}
-                        />
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-};
-
-/**
  * Fetch record data from current page URL with &xml=T parameter
  */
 const fetchRecordData = async (): Promise<{
@@ -396,12 +262,32 @@ const fetchRecordData = async (): Promise<{
     }
 };
 
+type DataSource = "xml" | "suiteql";
+
+interface RecordDetailState extends Record<string, unknown> {
+    dataSource: DataSource;
+    searchTerm: string;
+    showEmptyFields: boolean;
+}
+
+const initialState: RecordDetailState = {
+    dataSource: "xml",
+    searchTerm: "",
+    showEmptyFields: false, // XML defaults to hiding empty
+};
+
 export const RecordDetail = ({ setIsOpen }: RecordDetailProps) => {
+    const [state, dispatch] = useReducer(mergeReducer<RecordDetailState>, initialState);
+    const { dataSource, searchTerm, showEmptyFields } = state;
+
     const [record, setRecord] = useState<ParsedRecord | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [showEmptyFields, setShowEmptyFields] = useState(false);
+
+    const handleDataSourceChange = useCallback((value: DataSource) => {
+        // SuiteQL shows empty by default, XML hides empty by default
+        dispatch({ dataSource: value, showEmptyFields: value === "suiteql" });
+    }, []);
 
     const loadRecord = useCallback(async () => {
         setLoading(true);
@@ -463,13 +349,37 @@ export const RecordDetail = ({ setIsOpen }: RecordDetailProps) => {
     }, [recordWithEmptyFields, searchTerm]);
 
     const [forceExpanded, setForceExpanded] = useState<boolean | undefined>(undefined);
+    const [suiteqlRecordInfo, setSuiteqlRecordInfo] = useState<{
+        recordType: string | null;
+        id: string | null;
+    } | null>(null);
+    const [suiteqlRecord, setSuiteqlRecord] = useState<Record<string, unknown> | null>(null);
 
     const expandAll = useCallback(() => setForceExpanded(true), []);
     const collapseAll = useCallback(() => setForceExpanded(false), []);
 
-    const recordsCatalogUrl = record?.recordType
-        ? `https://system.netsuite.com/app/recordscatalog/rcbrowser.nl?whence=#/record_ss/${record.recordType}`
-        : null;
+    const handleSuiteqlRecordInfoChange = useCallback(
+        (info: { recordType: string | null; id: string | null }) => {
+            setSuiteqlRecordInfo(info);
+        },
+        []
+    );
+
+    const handleSuiteqlRecordChange = useCallback(
+        (record: Record<string, unknown> | null) => {
+            setSuiteqlRecord(record);
+        },
+        []
+    );
+
+    const recordsCatalogUrl =
+        dataSource === "xml"
+            ? record?.recordType
+                ? `https://system.netsuite.com/app/recordscatalog/rcbrowser.nl?whence=#/record_ss/${record.recordType}`
+                : null
+            : suiteqlRecordInfo?.recordType
+              ? `https://system.netsuite.com/app/recordscatalog/rcbrowser.nl?whence=#/record_ss/${suiteqlRecordInfo.recordType}`
+              : null;
 
     return (
         <div className="plasmo:text-foreground!">
@@ -479,9 +389,26 @@ export const RecordDetail = ({ setIsOpen }: RecordDetailProps) => {
                         <div className="plasmo:flex plasmo:items-center plasmo:justify-between">
                             <DialogTitle className="plasmo:flex plasmo:items-center plasmo:gap-2">
                                 Record Detail
-                                {record && (
+                                <Select
+                                    value={dataSource}
+                                    onValueChange={handleDataSourceChange}
+                                >
+                                    <SelectTrigger className="plasmo:w-auto plasmo:h-7 plasmo:text-xs plasmo:font-normal">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="plasmo:z-1003">
+                                        <SelectItem value="xml">XML</SelectItem>
+                                        <SelectItem value="suiteql">SuiteQL</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {dataSource === "xml" && record && (
                                     <span className="plasmo:text-muted-foreground plasmo:text-sm plasmo:font-normal">
                                         {record.recordType} #{record.id}
+                                    </span>
+                                )}
+                                {dataSource === "suiteql" && suiteqlRecordInfo && (
+                                    <span className="plasmo:text-muted-foreground plasmo:text-sm plasmo:font-normal">
+                                        {suiteqlRecordInfo.recordType} #{suiteqlRecordInfo.id}
                                     </span>
                                 )}
                             </DialogTitle>
@@ -489,7 +416,7 @@ export const RecordDetail = ({ setIsOpen }: RecordDetailProps) => {
                                 <Button
                                     variant={showEmptyFields ? "secondary" : "ghost"}
                                     size="sm"
-                                    onClick={() => setShowEmptyFields(!showEmptyFields)}
+                                    onClick={() => dispatch({ showEmptyFields: !showEmptyFields })}
                                     className="plasmo:cursor-pointer plasmo:h-8"
                                 >
                                     {showEmptyFields ? "Hide Empty" : "Show Empty"}
@@ -531,78 +458,94 @@ export const RecordDetail = ({ setIsOpen }: RecordDetailProps) => {
                                 )}
                                 <CopyButton
                                     value={
-                                        filteredRecord
-                                            ? JSON.stringify(filteredRecord, null, 2)
-                                            : ""
+                                        dataSource === "xml"
+                                            ? filteredRecord
+                                                ? JSON.stringify(filteredRecord, null, 2)
+                                                : ""
+                                            : suiteqlRecord
+                                              ? JSON.stringify(suiteqlRecord, null, 2)
+                                              : ""
                                     }
                                     title="Copy JSON to clipboard"
                                 />
                             </div>
                         </div>
-                        {record && (
-                            <div className="plasmo:pt-2!">
-                                <Input
-                                    type="text"
-                                    placeholder="Search fields..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="plasmo:h-8"
-                                    autoFocus
-                                />
-                            </div>
-                        )}
+                        <div className="plasmo:pt-2!">
+                            <Input
+                                type="text"
+                                placeholder="Search fields..."
+                                value={searchTerm}
+                                onChange={(e) => dispatch({ searchTerm: e.target.value })}
+                                className="plasmo:h-8"
+                                autoFocus
+                            />
+                        </div>
                     </DialogHeader>
 
                     <div className="plasmo:flex-1 plasmo:overflow-y-auto plasmo:overflow-x-auto plasmo:px-4! plasmo:pb-4! plasmo:font-mono plasmo:text-sm">
-                        {loading && (
-                            <div className="plasmo:flex plasmo:items-center plasmo:justify-center plasmo:h-32">
-                                <Spinner className="plasmo:size-8" />
-                            </div>
+                        {dataSource === "xml" && (
+                            <>
+                                {loading && (
+                                    <div className="plasmo:flex plasmo:items-center plasmo:justify-center plasmo:h-32">
+                                        <Spinner className="plasmo:size-8" />
+                                    </div>
+                                )}
+
+                                {error && (
+                                    <div className="plasmo:flex plasmo:flex-col plasmo:items-center plasmo:justify-center plasmo:h-32 plasmo:text-destructive plasmo:gap-2">
+                                        <AlertCircle className="plasmo:size-8" />
+                                        <span>{error}</span>
+                                        <span className="plasmo:text-muted-foreground plasmo:text-sm">
+                                            Are you on a record page?
+                                        </span>
+                                    </div>
+                                )}
+
+                                {filteredRecord && !loading && !error && (
+                                    <div>
+                                        <JsonNode
+                                            name="recordType"
+                                            value={filteredRecord.recordType}
+                                            searchTerm={searchTerm}
+                                            forceExpanded={forceExpanded}
+                                        />
+                                        <JsonNode
+                                            name="id"
+                                            value={filteredRecord.id}
+                                            searchTerm={searchTerm}
+                                            forceExpanded={forceExpanded}
+                                        />
+                                        {Object.keys(filteredRecord.bodyFields).length > 0 && (
+                                            <JsonNode
+                                                name="bodyFields"
+                                                value={filteredRecord.bodyFields}
+                                                searchTerm={searchTerm}
+                                                defaultExpanded={true}
+                                                forceExpanded={forceExpanded}
+                                            />
+                                        )}
+                                        {Object.keys(filteredRecord.lineFields).length > 0 && (
+                                            <JsonNode
+                                                name="lineFields"
+                                                value={filteredRecord.lineFields}
+                                                searchTerm={searchTerm}
+                                                defaultExpanded={true}
+                                                forceExpanded={forceExpanded}
+                                            />
+                                        )}
+                                    </div>
+                                )}
+                            </>
                         )}
 
-                        {error && (
-                            <div className="plasmo:flex plasmo:flex-col plasmo:items-center plasmo:justify-center plasmo:h-32 plasmo:text-destructive plasmo:gap-2">
-                                <AlertCircle className="plasmo:size-8" />
-                                <span>{error}</span>
-                                <span className="plasmo:text-muted-foreground plasmo:text-sm">
-                                    Are you on a record page?
-                                </span>
-                            </div>
-                        )}
-
-                        {filteredRecord && !loading && !error && (
-                            <div>
-                                <JsonNode
-                                    name="recordType"
-                                    value={filteredRecord.recordType}
-                                    searchTerm={searchTerm}
-                                    forceExpanded={forceExpanded}
-                                />
-                                <JsonNode
-                                    name="id"
-                                    value={filteredRecord.id}
-                                    searchTerm={searchTerm}
-                                    forceExpanded={forceExpanded}
-                                />
-                                {Object.keys(filteredRecord.bodyFields).length > 0 && (
-                                    <JsonNode
-                                        name="bodyFields"
-                                        value={filteredRecord.bodyFields}
-                                        searchTerm={searchTerm}
-                                        defaultExpanded={true}
-                                        forceExpanded={forceExpanded}
-                                    />
-                                )}
-                                {Object.keys(filteredRecord.lineFields).length > 0 && (
-                                    <JsonNode
-                                        name="lineFields"
-                                        value={filteredRecord.lineFields}
-                                        searchTerm={searchTerm}
-                                        defaultExpanded={true}
-                                        forceExpanded={forceExpanded}
-                                    />
-                                )}
-                            </div>
+                        {dataSource === "suiteql" && (
+                            <SuiteQLRecordDetail
+                                searchTerm={searchTerm}
+                                forceExpanded={forceExpanded}
+                                showEmptyFields={showEmptyFields}
+                                onRecordInfoChange={handleSuiteqlRecordInfoChange}
+                                onRecordChange={handleSuiteqlRecordChange}
+                            />
                         )}
                     </div>
                     <SupportLinks />

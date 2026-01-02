@@ -21,11 +21,16 @@ A powerful command palette for quickly navigating NetSuite. Press `Ctrl/Cmd + Sh
 
 View any NetSuite record as structured JSON. Press `Ctrl/Cmd + Shift + E` while on a record page.
 
+- **Dual data sources** - Switch between XML and SuiteQL modes to view record data
+  - **XML mode** - Uses NetSuite's native XML export for complete field visibility including sublists
+  - **SuiteQL mode** - Queries the record directly via SuiteQL with related table support
 - **Collapsible tree view** - Navigate through body fields and line items with expand/collapse controls
 - **Search & filter** - Filter fields by name or value with highlighted matches
-- **Copy to clipboard** - Copy the entire record or individual sections as JSON
+- **Show/Hide empty fields** - Toggle visibility of null or empty values
+- **Copy to clipboard** - Copy the entire record as JSON
 - **Records Catalog link** - Quick link to the record type documentation in NetSuite's Records Catalog
 - **Expand/Collapse all** - Quickly expand or collapse all nodes
+- **Related tables** - SuiteQL mode automatically fetches related records (e.g., transaction lines, role permissions)
 
 ### SuiteQL Editor
 

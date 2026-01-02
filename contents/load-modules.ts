@@ -28,3 +28,75 @@ window.addEventListener("LOAD_NS_MODULES", () => {
         console.error("Error loading NetSuite modules: ", e);
     }
 });
+
+// Handle requests for NetSuite modules from the isolated content script world
+window.addEventListener("message", (event) => {
+    if (event.source !== window || event.data?.type !== "NS_MODULE_REQUEST") {
+        return;
+    }
+
+    const { module: moduleName, requestId } = event.data;
+
+    try {
+        if (typeof (window as any).require !== "function") {
+            window.postMessage(
+                {
+                    type: "NS_MODULE_RESPONSE",
+                    requestId,
+                    error: "NetSuite require function not available",
+                },
+                "*"
+            );
+            return;
+        }
+
+        (window as any).require([`N/${moduleName}`], (nsModule: any) => {
+            // We can't send the module directly (it won't survive serialization),
+            // but we can call methods on it and send back the results
+            // For currentRecord, we just need to call .get() and return the result
+            if (moduleName === "currentRecord" && nsModule?.get) {
+                try {
+                    const record = nsModule.get();
+                    window.postMessage(
+                        {
+                            type: "NS_MODULE_RESPONSE",
+                            requestId,
+                            result: {
+                                id: record?.id,
+                                type: record?.type,
+                            },
+                        },
+                        "*"
+                    );
+                } catch (e) {
+                    window.postMessage(
+                        {
+                            type: "NS_MODULE_RESPONSE",
+                            requestId,
+                            error: e instanceof Error ? e.message : String(e),
+                        },
+                        "*"
+                    );
+                }
+            } else {
+                window.postMessage(
+                    {
+                        type: "NS_MODULE_RESPONSE",
+                        requestId,
+                        error: `Module ${moduleName} not supported for cross-world messaging`,
+                    },
+                    "*"
+                );
+            }
+        });
+    } catch (e) {
+        window.postMessage(
+            {
+                type: "NS_MODULE_RESPONSE",
+                requestId,
+                error: e instanceof Error ? e.message : String(e),
+            },
+            "*"
+        );
+    }
+});

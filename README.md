@@ -6,6 +6,8 @@ A Chrome extension that supercharges your NetSuite workflow. Run SuiteQL queries
 
 **[View Documentation](https://bernsteinmatt.github.io/netsuite-utilities/)**
 
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/matthewbernstein)
+
 Built with [Plasmo](https://docs.plasmo.com/), React, and TypeScript.
 
 ## Features

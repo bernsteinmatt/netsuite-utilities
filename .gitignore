@@ -46,3 +46,8 @@ keys.json
 .bolt
 
 tsconfig.tsbuildinfo
+
+# Docusaurus
+website/build/
+website/.docusaurus/
+website/node_modules/

@@ -1,6 +1,10 @@
 # NetSuite Utilities
 
-A browser extension that supercharges your NetSuite workflow. Run SuiteQL queries, browse script logs, search roles instantly, and customize the interface—all without leaving your browser.
+A Chrome extension that supercharges your NetSuite workflow. Run SuiteQL queries, browse script logs, search roles instantly, and customize the interface—all without leaving your browser.
+
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/bcpikialpbpnlcglbniknbedfkcglppa)](https://chromewebstore.google.com/detail/netsuite-utilities/bcpikialpbpnlcglbniknbedfkcglppa)
+
+**[View Documentation](https://bernsteinmatt.github.io/netsuite-utilities/)**
 
 Built with [Plasmo](https://docs.plasmo.com/), React, and TypeScript.
 
@@ -11,7 +15,7 @@ Built with [Plasmo](https://docs.plasmo.com/), React, and TypeScript.
 A powerful command palette for quickly navigating NetSuite. Press `Ctrl/Cmd + Shift + K` to open.
 
 - **Universal search** - Search across customers, vendors, employees, transactions, scripts, custom records, and more
-- **Smart prefixes** - Use prefixes like `cus:`, `ven:`, `emp:`, `tran:`, `script:`, `cr:` (custom records), `cl:` (custom lists) to filter results
+- **Smart prefixes** - Use prefixes like `cus:`, `ven:`, `emp:`, `tran:`, `script:`, `acc:` (accounts), `cr:` (custom records), `cl:` (custom lists) to filter results
 - **Navigation search** - Search NetSuite menu items with `nav:` prefix
 - **Quick access to tools** - Launch SuiteQL Editor, Script Log Viewer, Record Detail, and Module Loader directly from the command palette
 - **Custom record instance search** - Search within custom record data based on your permissions
@@ -101,7 +105,17 @@ Load NetSuite modules into the browser console for testing and debugging.
 
 ## Installation
 
+### Chrome Web Store
+
+The easiest way to install:
+
+1. Visit the [Chrome Web Store](https://chromewebstore.google.com/detail/netsuite-utilities/bcpikialpbpnlcglbniknbedfkcglppa)
+2. Click **Add to Chrome**
+3. Navigate to any NetSuite page to start using the extension
+
 ### From Source
+
+For development or to build from source:
 
 1. Clone the repository:
    ```bash
@@ -119,9 +133,11 @@ Load NetSuite modules into the browser console for testing and debugging.
    pnpm build
    ```
 
-4. Load in your browser:
-   - **Chrome**: Go to `chrome://extensions`, enable "Developer mode", click "Load unpacked", and select `build/chrome-mv3-prod`
-   - **Firefox**: Go to `about:debugging`, click "This Firefox", click "Load Temporary Add-on", and select any file in `build/firefox-mv3-prod`
+4. Load in Chrome:
+   - Go to `chrome://extensions`
+   - Enable "Developer mode" (toggle in top right)
+   - Click "Load unpacked"
+   - Select the `build/chrome-mv3-prod` folder
 
 ### Development
 
@@ -131,7 +147,7 @@ Run the development server with hot reload:
 pnpm dev
 ```
 
-Load the development build from `build/chrome-mv3-dev` (Chrome) or `build/firefox-mv3-dev` (Firefox).
+Load the development build from `build/chrome-mv3-dev`.
 
 ## Scripts
 

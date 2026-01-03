@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+/**
+ * Docusaurus theme variables
+ */
+
+:root {
+  --ifm-color-primary: #525252;
+  --ifm-color-primary-dark: #404040;
+  --ifm-color-primary-darker: #363636;
+  --ifm-color-primary-darkest: #262626;
+  --ifm-color-primary-light: #6b6b6b;
+  --ifm-color-primary-lighter: #737373;
+  --ifm-color-primary-lightest: #a3a3a3;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+  --ifm-color-primary: #a3a3a3;
+  --ifm-color-primary-dark: #8a8a8a;
+  --ifm-color-primary-darker: #737373;
+  --ifm-color-primary-darkest: #525252;
+  --ifm-color-primary-light: #b5b5b5;
+  --ifm-color-primary-lighter: #d4d4d4;
+  --ifm-color-primary-lightest: #e5e5e5;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* Footer background - must match hero dark */
+.footer--dark {
+  --ifm-footer-background-color: #262626 !important;
+  background-color: #262626 !important;
+}
+
+/* Hero header backgrounds - inverted for contrast */
+.hero--primary {
+  --ifm-hero-background-color: #262626;
+  --ifm-hero-text-color: #f5f5f5;
+}
+
+[data-theme="dark"] .hero--primary {
+  --ifm-hero-background-color: #f5f5f5;
+  --ifm-hero-text-color: #262626;
+}
+
+/* Hero buttons - fix outline button visibility */
+.hero--primary .button--outline {
+  --ifm-button-border-color: currentColor;
+  color: #f5f5f5 !important;
+  border-color: #f5f5f5 !important;
+}
+
+.hero--primary .button--outline:hover {
+  background-color: rgba(245, 245, 245, 0.1) !important;
+}
+
+[data-theme="dark"] .hero--primary .button--outline {
+  color: #262626 !important;
+  border-color: #262626 !important;
+}
+
+[data-theme="dark"] .hero--primary .button--outline:hover {
+  background-color: rgba(38, 38, 38, 0.1) !important;
+}
+
+/* GitHub icon in navbar */
+.header-github-link::before {
+  content: "";
+  width: 24px;
+  height: 24px;
+  display: flex;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23181717' d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/%3E%3C/svg%3E")
+    no-repeat;
+}
+
+[data-theme="dark"] .header-github-link::before {
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23ffffff' d='M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12'/%3E%3C/svg%3E")
+    no-repeat;
+}
+
+.header-github-link:hover {
+  opacity: 0.6;
+}
+
+/* Search input fix for dark mode - override the magnifying glass SVG with white version */
+[data-theme="dark"] .navbar__search-input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23ffffff' d='M6.02945,10.20327a4.17382,4.17382,0,1,1,4.17382-4.17382A4.15609,4.15609,0,0,1,6.02945,10.20327Zm9.69195,4.2199L10.8989,9.59979A5.88021,5.88021,0,0,0,12.058,6.02856,6.00467,6.00467,0,1,0,9.59979,10.8989l4.82338,4.82338a.89729.89729,0,0,0,1.29912,0,.89749.89749,0,0,0,0-1.29811Z' /%3E%3C/svg%3E") !important;
+  background-color: var(--ifm-navbar-search-input-background-color) !important;
+}
+
+/* Search placeholder text color for dark mode */
+[data-theme="dark"] .navbar__search-input::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Keyboard shortcuts styling */
+kbd {
+  background-color: #f5f5f5 !important;
+  border: 1px solid #d4d4d4 !important;
+  border-radius: 3px !important;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.1) !important;
+  font-family: var(--ifm-font-family-monospace) !important;
+  font-size: 0.85em !important;
+  padding: 0.15em 0.4em !important;
+  color: #171717 !important;
+}
+
+[data-theme="dark"] kbd {
+  background-color: #404040 !important;
+  border-color: #525252 !important;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.2) !important;
+  color: #e5e5e5 !important;
+}
+
+/* Footer external link icon - keep on same line as text */
+.footer__link-item {
+  white-space: nowrap;
+}
+
+.footer__link-item svg {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 0.25rem;
+}

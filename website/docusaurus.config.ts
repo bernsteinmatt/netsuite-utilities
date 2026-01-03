@@ -5,7 +5,7 @@ import type * as Preset from "@docusaurus/preset-classic";
 const config: Config = {
   title: "NetSuite Utilities",
   tagline: "Supercharge your NetSuite workflow",
-  favicon: "img/favicon.ico",
+  favicon: "img/favicon.png",
 
   url: "https://bernsteinmatt.github.io",
   baseUrl: "/netsuite-utilities/",
@@ -109,6 +109,15 @@ const config: Config = {
             {
               label: "Changelog",
               to: "/docs/changelog",
+            },
+          ],
+        },
+        {
+          title: "Support",
+          items: [
+            {
+              label: "Buy Me a Coffee",
+              href: "https://buymeacoffee.com/matthewbernstein",
             },
           ],
         },

@@ -1,8 +1,12 @@
-import clsx from "clsx";
 import Link from "@docusaurus/Link";
 import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
-import Layout from "@theme/Layout";
 import Heading from "@theme/Heading";
+import Layout from "@theme/Layout";
+import clsx from "clsx";
+
+
+
+
 
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
@@ -103,9 +107,38 @@ function HomepageFeatures() {
   );
 }
 
+function SupportSection() {
+  return (
+      <section className="py-12">
+          <div className="text-center flex flex-col gap-4">
+              <div className={"flex flex-row gap-4 items-center justify-center"}>
+                  <Heading as="h2" className="flex items-center m-0!">
+                      Support This Project
+                  </Heading>
+                  <a
+                      href="https://buymeacoffee.com/matthewbernstein"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={"flex flex-row items-center"}
+                  >
+                      <img
+                          src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+                          alt="Buy Me A Coffee"
+                          style={{ height: "25px" }}
+                      />
+                  </a>
+              </div>
+              <p className="mb-6 text-[var(--ifm-color-emphasis-700)]">
+                  If you find NetSuite Utilities helpful, consider supporting its development.
+              </p>
+          </div>
+      </section>
+  );
+}
+
 function HomepageShortcuts() {
   return (
-    <section className="py-12 bg-[var(--ifm-color-emphasis-100)]">
+    <section className="py-12">
       <div className="container">
         <Heading as="h2" className="text-center mb-8">
           Keyboard Shortcuts
@@ -157,7 +190,7 @@ function HomepageShortcuts() {
   );
 }
 
-export default function Home(): JSX.Element {
+export default function Home() {
   const { siteConfig } = useDocusaurusContext();
   return (
     <Layout
@@ -168,6 +201,7 @@ export default function Home(): JSX.Element {
       <main>
         <HomepageFeatures />
         <HomepageShortcuts />
+        <SupportSection />
       </main>
     </Layout>
   );

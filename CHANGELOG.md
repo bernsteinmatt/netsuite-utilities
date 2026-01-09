@@ -5,6 +5,17 @@ All notable changes to NetSuite Utilities will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.5] - 2026-01-09
+
+### Added
+- **Quick Execute Button**: One-click execution for Map/Reduce and Scheduled scripts directly from the script record page
+  - Automatically detects script type and only shows for executable scripts (Map/Reduce, Scheduled)
+  - Works with both legacy NetSuite theme and Redwood theme
+  - Shows "Executing..." feedback while script is being triggered
+  - Alerts user if no deployment is available for the script
+- **Script Type Quick Links**: Command Search now includes direct links to script lists filtered by type (Scheduled, Suitelet, RESTlet, User Event, Client, Map/Reduce, Portlet, Mass Update, Workflow Action, Bundle Installation, SDF Installation, Custom Tool)
+- New `requireNetSuiteModule` utility for loading NetSuite modules outside React components
+
 ## [0.0.4] - 2026-01-02
 
 ### Added

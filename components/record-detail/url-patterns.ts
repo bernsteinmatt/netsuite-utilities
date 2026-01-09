@@ -368,6 +368,14 @@ export const URL_PATTERNS: UrlPatternDefinition[] = [
         idColumn: "id",
         staticTable: "employeeexpensesourcetype",
     },
+    // Script deployment page
+    // URL: /app/common/scripting/scriptrecord.nl?id=3638
+    {
+        pathPattern: "/scripting/scriptrecord.nl",
+        idParam: "id",
+        idColumn: "primarykey",
+        staticTable: "scriptdeployment",
+    },
     // All transaction types (vendbill, invoice, salesorder, etc.)
     // URL: /app/accounting/transactions/vendbill.nl?id=65339
     // URL: /app/accounting/transactions/salesord.nl?id=12345

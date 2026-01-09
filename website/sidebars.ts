@@ -23,6 +23,7 @@ const sidebars: SidebarsConfig = {
                 "features/side-panel",
                 "features/ui-enhancements",
                 "features/module-loader",
+                "features/quick-execute",
             ],
         },
         {

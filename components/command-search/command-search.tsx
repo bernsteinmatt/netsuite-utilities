@@ -145,6 +145,139 @@ const mapping = {
         listUrl: "/app/common/scripting/scriptlist.nl",
         listLabel: "Scripts",
     },
+    scriptScheduled: {
+        prefix: "script:scheduled",
+        table: "script",
+        textFields: ["name"],
+        selectColumns: ["id", "name AS label"],
+        urlBase: "/app/common/scripting/script.nl",
+        whereClause: ["scriptType = 'SCHEDULED'"],
+        description: "Scheduled Script",
+        listUrl: "/app/common/scripting/scriptlist.nl?scripttype=SCHEDULED",
+        listLabel: "Scheduled Scripts",
+    },
+    scriptSuitelet: {
+        prefix: "script:suitelet",
+        table: "script",
+        textFields: ["name"],
+        selectColumns: ["id", "name AS label"],
+        urlBase: "/app/common/scripting/script.nl",
+        whereClause: ["scriptType = 'SCRIPTLET'"],
+        description: "Suitelet",
+        listUrl: "/app/common/scripting/scriptlist.nl?scripttype=SCRIPTLET",
+        listLabel: "Suitelets",
+    },
+    scriptRestlet: {
+        prefix: "script:restlet",
+        table: "script",
+        textFields: ["name"],
+        selectColumns: ["id", "name AS label"],
+        urlBase: "/app/common/scripting/script.nl",
+        whereClause: ["scriptType = 'RESTLET'"],
+        description: "RESTlet",
+        listUrl: "/app/common/scripting/scriptlist.nl?scripttype=RESTLET",
+        listLabel: "RESTlets",
+    },
+    scriptUserEvent: {
+        prefix: "script:userevent",
+        table: "script",
+        textFields: ["name"],
+        selectColumns: ["id", "name AS label"],
+        urlBase: "/app/common/scripting/script.nl",
+        whereClause: ["scriptType = 'USEREVENT'"],
+        description: "User Event",
+        listUrl: "/app/common/scripting/scriptlist.nl?scripttype=USEREVENT",
+        listLabel: "User Event Scripts",
+    },
+    scriptClient: {
+        prefix: "script:client",
+        table: "script",
+        textFields: ["name"],
+        selectColumns: ["id", "name AS label"],
+        urlBase: "/app/common/scripting/script.nl",
+        whereClause: ["scriptType = 'CLIENT'"],
+        description: "Client Script",
+        listUrl: "/app/common/scripting/scriptlist.nl?scripttype=CLIENT",
+        listLabel: "Client Scripts",
+    },
+    scriptMapReduce: {
+        prefix: "script:mapreduce",
+        table: "script",
+        textFields: ["name"],
+        selectColumns: ["id", "name AS label"],
+        urlBase: "/app/common/scripting/script.nl",
+        whereClause: ["scriptType = 'MAPREDUCE'"],
+        description: "Map/Reduce",
+        listUrl: "/app/common/scripting/scriptlist.nl?scripttype=MAPREDUCE",
+        listLabel: "Map/Reduce Scripts",
+        searchTerms: "mapreduce map reduce",
+    },
+    scriptPortlet: {
+        prefix: "script:portlet",
+        table: "script",
+        textFields: ["name"],
+        selectColumns: ["id", "name AS label"],
+        urlBase: "/app/common/scripting/script.nl",
+        whereClause: ["scriptType = 'PORTLET'"],
+        description: "Portlet",
+        listUrl: "/app/common/scripting/scriptlist.nl?scripttype=PORTLET",
+        listLabel: "Portlets",
+    },
+    scriptMassUpdate: {
+        prefix: "script:massupdate",
+        table: "script",
+        textFields: ["name"],
+        selectColumns: ["id", "name AS label"],
+        urlBase: "/app/common/scripting/script.nl",
+        whereClause: ["scriptType = 'MASSUPDATE'"],
+        description: "Mass Update",
+        listUrl: "/app/common/scripting/scriptlist.nl?scripttype=MASSUPDATE",
+        listLabel: "Mass Update Scripts",
+    },
+    scriptWorkflowAction: {
+        prefix: "script:action",
+        table: "script",
+        textFields: ["name"],
+        selectColumns: ["id", "name AS label"],
+        urlBase: "/app/common/scripting/script.nl",
+        whereClause: ["scriptType = 'ACTION'"],
+        description: "Workflow Action",
+        listUrl: "/app/common/scripting/scriptlist.nl?scripttype=ACTION",
+        listLabel: "Workflow Action Scripts",
+    },
+    scriptBundleInstallation: {
+        prefix: "script:bundle",
+        table: "script",
+        textFields: ["name"],
+        selectColumns: ["id", "name AS label"],
+        urlBase: "/app/common/scripting/script.nl",
+        whereClause: ["scriptType = 'BUNDLEINSTALLATION'"],
+        description: "Bundle Installation",
+        listUrl: "/app/common/scripting/scriptlist.nl?scripttype=BUNDLEINSTALLATION",
+        listLabel: "Bundle Installation Scripts",
+    },
+    scriptSdfInstallation: {
+        prefix: "script:sdf",
+        table: "script",
+        textFields: ["name"],
+        selectColumns: ["id", "name AS label"],
+        urlBase: "/app/common/scripting/script.nl",
+        whereClause: ["scriptType = 'SDFINSTALLATION'"],
+        description: "SDF Installation",
+        listUrl: "/app/common/scripting/scriptlist.nl?scripttype=SDFINSTALLATION",
+        listLabel: "SDF Installation Scripts",
+    },
+    scriptCustomTool: {
+        prefix: "script:tool",
+        table: "script",
+        textFields: ["name"],
+        selectColumns: ["id", "name AS label"],
+        urlBase: "/app/common/scripting/script.nl",
+        whereClause: ["scriptType = 'CUSTOMAGENTTOOL'"],
+        description: "Custom Tool",
+        listUrl: "/app/common/scripting/scriptlist.nl?scripttype=CUSTOMAGENTTOOL",
+        listLabel: "Custom Tool Scripts",
+    },
     customRecordDefinition: {
         prefix: "cr",
         table: "CustomRecordType",
@@ -176,6 +309,7 @@ const recordLists = Object.entries(mapping)
         label: (m as { listLabel: string }).listLabel,
         url: (m as { listUrl: string }).listUrl,
         description: (m as { description?: string }).description,
+        searchTerms: (m as { searchTerms?: string }).searchTerms,
     }));
 
 const MAX_NAV_RESULTS = 15;
@@ -524,8 +658,11 @@ export const CommandSearch = ({ setIsOpen, onOpenTool }: CommandSearchProps) => 
         return prefix.startsWith(inputPrefix) || inputPrefix.startsWith(prefix);
     };
 
-    // Default types to search when no prefix is specified (all except "entity" which is a superset)
-    const defaultSearchTypes = Object.keys(mapping).filter((key) => key !== "entity");
+    // Default types to search when no prefix is specified (all except "entity" which is a superset
+    // and script type-specific entries which would duplicate results from the generic "script" search)
+    const defaultSearchTypes = Object.keys(mapping).filter(
+        (key) => key !== "entity" && !key.startsWith("script") || key === "script"
+    );
 
     // Get which record types to search based on prefix
     const getTypesToSearch = (fullQuery: string): string[] => {
@@ -871,7 +1008,11 @@ export const CommandSearch = ({ setIsOpen, onOpenTool }: CommandSearchProps) => 
 
                 <CommandGroup heading="Record Lists">
                     {recordLists.map((item) => (
-                        <CommandItem key={item.id} value={item.label} asChild>
+                        <CommandItem
+                            key={item.id}
+                            value={`${item.label} ${item.description || ""} ${item.searchTerms || ""}`}
+                            asChild
+                        >
                             <a
                                 href={item.url}
                                 rel="noopener noreferrer"

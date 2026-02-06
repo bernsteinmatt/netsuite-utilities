@@ -167,6 +167,13 @@ layer(base);
     box-sizing: border-box;
 }
 
+/* Override NetSuite link styles */
+#netsuite-utilities-root,
+[data-slot="dialog-content"] {
+    --oj-link-text-color: var(--foreground);
+    --oj-link-text-color-visited: var(--foreground);
+}
+
 /* Override NetSuite form input styles */
 #plasmo-shadow-container input[type="text"],
 #plasmo-shadow-container input[type="password"],
@@ -193,7 +200,6 @@ layer(base);
     border: unset !important;
     box-shadow: unset !important;
 }
-
 /* Override NetSuite styles in Radix portals (popovers, dialogs, dropdowns) */
 [data-radix-popper-content-wrapper] input[type="text"],
 [data-radix-popper-content-wrapper] input[type="password"],

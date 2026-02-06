@@ -1,3 +1,11 @@
+import { JsonNode } from "@/components/record-detail/json-node";
+import {
+    parseNextUrl,
+    RECORD_TYPE_TO_TABLE,
+    URL_PATTERNS,
+    type RelatedTable,
+    type TableLookup,
+} from "@/components/record-detail/url-patterns";
 import { CopyButton } from "@/components/ui/copy-button";
 import { Spinner } from "@/components/ui/spinner";
 import { AlertCircle } from "lucide-react";
@@ -6,14 +14,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { debugLog } from "~lib/debug";
 import { useCurrentRecord } from "~lib/hooks/use-current-record";
 import { fetchQuery } from "~lib/netsuite";
-
-import { JsonNode } from "@/components/record-detail/json-node";
-import {
-    RECORD_TYPE_TO_TABLE,
-    URL_PATTERNS,
-    type RelatedTable,
-    type TableLookup,
-} from "@/components/record-detail/url-patterns";
 
 /**
  * Helper to sort object keys alphabetically (recursively for nested objects/arrays)
@@ -107,6 +107,8 @@ interface ParsedUrlInfo {
     rectypeValue: string | null;
     lookupTables: TableLookup[];
     staticTable: string | null;
+    /** Fallback table names to try if staticTable query fails (e.g., from "Next" URL slug parsing) */
+    fallbackTables: string[];
     relatedTables: RelatedTable[];
 }
 
@@ -121,14 +123,26 @@ const parseRecordFromUrl = (): ParsedUrlInfo => {
 
     for (const pattern of URL_PATTERNS) {
         if (pathname.includes(pattern.pathPattern)) {
+            let id = url.searchParams.get(pattern.idParam);
+
+            // NetSuite "Next" URLs use path-based IDs (e.g., /next/cru-nact-task/726)
+            if (!id) {
+                const nextInfo = parseNextUrl();
+                if (nextInfo) {
+                    id = nextInfo.id;
+                    debugLog("SuiteQL", "Extracted ID from Next URL:", id);
+                }
+            }
+
             const result = {
-                id: url.searchParams.get(pattern.idParam),
+                id,
                 idColumn: pattern.idColumn ?? "id",
                 rectypeValue: pattern.rectypeParam
                     ? url.searchParams.get(pattern.rectypeParam)
                     : null,
                 lookupTables: pattern.lookupTables ?? [],
                 staticTable: pattern.staticTable ?? null,
+                fallbackTables: [],
                 relatedTables: pattern.relatedTables ?? [],
             };
             debugLog("SuiteQL", "Matched URL pattern:", pattern.pathPattern, result);
@@ -136,13 +150,37 @@ const parseRecordFromUrl = (): ParsedUrlInfo => {
         }
     }
 
-    // Default: try to get ID from standard 'id' parameter
+    // Default: try to get ID from standard 'id' parameter or "Next" URL path
+    let id = url.searchParams.get("id");
+    let staticTable: string | null = null;
+    let fallbackTables: string[] = [];
+
+    // Try "Next" URL parsing for path-based IDs and slug-derived record types
+    const nextInfo = parseNextUrl();
+    if (nextInfo) {
+        id = id || nextInfo.id;
+        staticTable = nextInfo.recordType;
+
+        // For custom records, also try without the "customrecord_" prefix as a fallback
+        if (nextInfo.slug.startsWith("cru-")) {
+            const withoutPrefix = nextInfo.slug.slice(4);
+            fallbackTables = [withoutPrefix.replace(/-/g, "_")];
+        }
+
+        debugLog("SuiteQL", "Extracted record type from Next URL slug:", {
+            slug: nextInfo.slug,
+            staticTable,
+            fallbackTables,
+        });
+    }
+
     const defaultResult = {
-        id: url.searchParams.get("id"),
+        id,
         idColumn: "id",
         rectypeValue: null,
         lookupTables: [],
-        staticTable: null,
+        staticTable,
+        fallbackTables,
         relatedTables: [],
     };
     debugLog("SuiteQL", "No URL pattern matched, using defaults:", defaultResult);
@@ -163,7 +201,10 @@ const fetchRelatedRecords = async (
         const nestKey = rel.nestKey ?? `_${rel.table}`;
 
         if (foreignKeyValue === null || foreignKeyValue === undefined) {
-            debugLog("SuiteQL", `Skipping related table ${rel.table}: foreign key ${rel.foreignKey} is null`);
+            debugLog(
+                "SuiteQL",
+                `Skipping related table ${rel.table}: foreign key ${rel.foreignKey} is null`
+            );
             related[nestKey] = null;
             continue;
         }
@@ -188,7 +229,10 @@ const fetchRelatedRecords = async (
                 related[nestKey] = data[0];
             }
         } else {
-            debugLog("SuiteQL", `No related ${rel.table} found for ${rel.foreignKey}=${foreignKeyValue}`);
+            debugLog(
+                "SuiteQL",
+                `No related ${rel.table} found for ${rel.foreignKey}=${foreignKeyValue}`
+            );
             related[nestKey] = rel.multiple ? [] : null;
         }
     }
@@ -352,33 +396,50 @@ export const SuiteQLRecordDetail = ({
                 return;
             }
 
-            setRecordInfo({ id: recordId, idColumn, type: tableName });
-            onRecordInfoChange?.({ recordType: tableName, id: recordId });
+            // Execute the SuiteQL query, trying fallback tables if the primary fails
+            const tablesToTry = [tableName, ...urlInfo.fallbackTables];
+            let resolvedTable: string | null = null;
+            let finalRecord: Record<string, unknown> | null = null;
+            let lastError: string | null = null;
 
-            // Execute the SuiteQL query using the appropriate ID column
-            const query = `SELECT * FROM ${tableName} WHERE ${idColumn} = '${recordId}'`;
-            debugLog("SuiteQL", "Executing query:", query);
-            const { data, error: queryError } = await fetchQuery<Record<string, unknown>>(query);
+            for (const table of tablesToTry) {
+                const query = `SELECT * FROM ${table} WHERE ${idColumn} = '${recordId}'`;
+                debugLog("SuiteQL", "Executing query:", query);
+                const { data, error: queryError } =
+                    await fetchQuery<Record<string, unknown>>(query);
 
-            if (queryError) {
-                debugLog("SuiteQL", "Query error:", queryError);
-                setError(`SuiteQL Error: ${queryError}`);
+                if (queryError) {
+                    debugLog("SuiteQL", "Query error for table", table, ":", queryError);
+                    lastError = queryError;
+                    continue;
+                }
+
+                if (data && data.length > 0) {
+                    debugLog("SuiteQL", "Query result from table", table, ":", data);
+                    resolvedTable = table;
+                    finalRecord = data[0];
+                    break;
+                }
+
+                debugLog("SuiteQL", "No results from table", table);
+                lastError = `No record found with ID ${recordId} in table ${table}`;
+            }
+
+            if (!finalRecord || !resolvedTable) {
+                setError(lastError || `No record found with ID ${recordId}`);
                 setLoading(false);
                 return;
             }
 
-            debugLog("SuiteQL", "Query result:", data);
-            if (!data || data.length === 0) {
-                setError(`No record found with ID ${recordId} in table ${tableName}`);
-                setLoading(false);
-                return;
-            }
-
-            let finalRecord = data[0];
+            setRecordInfo({ id: recordId, idColumn, type: resolvedTable });
+            onRecordInfoChange?.({ recordType: resolvedTable, id: recordId });
 
             // Fetch related records if configured
             if (urlInfo.relatedTables.length > 0) {
-                const relatedRecords = await fetchRelatedRecords(finalRecord, urlInfo.relatedTables);
+                const relatedRecords = await fetchRelatedRecords(
+                    finalRecord,
+                    urlInfo.relatedTables
+                );
                 finalRecord = { ...finalRecord, ...relatedRecords };
             }
 
@@ -445,9 +506,7 @@ export const SuiteQLRecordDetail = ({
 
             const keyMatches = key.toUpperCase().includes(term);
             const valueMatches =
-                value !== null &&
-                value !== undefined &&
-                String(value).toUpperCase().includes(term);
+                value !== null && value !== undefined && String(value).toUpperCase().includes(term);
 
             if (keyMatches || valueMatches) {
                 filtered[key] = value;

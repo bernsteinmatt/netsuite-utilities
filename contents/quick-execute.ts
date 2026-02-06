@@ -14,8 +14,12 @@ const EXECUTABLE_SCRIPT_TYPES = ["MAPREDUCE", "SCHEDULED"];
 const isExecutableScript = async (): Promise<boolean> => {
     try {
         const currentRecord = await requireNetSuiteModule<{ get: () => any }>("currentRecord");
-        const record = currentRecord.get();
-        const scriptType = record.getValue({ fieldId: "scripttype" });
+        if (!currentRecord) {
+            console.warn("currentRecord module not available, cannot determine script type");
+            return false;
+        }
+        const record = currentRecord.get?.();
+        const scriptType = record?.getValue?.({ fieldId: "scripttype" });
         return EXECUTABLE_SCRIPT_TYPES.includes(scriptType);
     } catch (e) {
         console.error("Error checking script type:", e);
@@ -81,85 +85,6 @@ const submitMapReduceScript = async (event: Event): Promise<void> => {
     });
 
     iframeWindow?.NLMultiButton_doAction("multibutton_submitter", "submitexecute");
-    // const pollScriptExecution = async (
-    //     scriptInternalId,
-    //     intervalMs = 5000,
-    //     maxAttempts = 60
-    // ) => {
-    //     let attempts = 0;
-    //
-    //     while (attempts < maxAttempts) {
-    //         const response = await fetch(
-    //             "https://tstdrv2034515.app.netsuite.com/app/common/scripting/nlapijsonhandler.nl",
-    //             {
-    //                 method: "POST",
-    //                 headers: {
-    //                     "Content-Type": "application/json",
-    //                 },
-    //                 body: JSON.stringify({
-    //                     method: "remoteObject.searchRecord",
-    //                     params: [
-    //                         "scheduledscriptinstance",
-    //                         null,
-    //                         [
-    //                             {
-    //                                 javaClass: "java.util.HashMap",
-    //                                 operator: "anyof",
-    //                                 values: [scriptInternalId.toString()],
-    //                                 join: "script",
-    //                                 name: "internalid",
-    //                             },
-    //                             {
-    //                                 javaClass: "java.util.HashMap",
-    //                                 operator: "anyof",
-    //                                 values: ["PENDING", "PROCESSING"],
-    //                                 name: "status",
-    //                             },
-    //                         ],
-    //                         [
-    //                             {
-    //                                 join: "scriptDeployment",
-    //                                 summary: "GROUP",
-    //                                 name: "internalid",
-    //                             },
-    //                             {
-    //                                 summary: "MAX",
-    //                                 name: "status",
-    //                             },
-    //                         ],
-    //                     ],
-    //                 }),
-    //             }
-    //         );
-    //
-    //         const data = await response.json();
-    //
-    //         if (!data.result?.rows || data.result.rows.length === 0) {
-    //             console.log("✅ Script completed (no running instances found)");
-    //             return { completed: true };
-    //         }
-    //
-    //         const status = data.result.rows[0].cells.find(
-    //             (c) => c.name === "status"
-    //         )?.value;
-    //         const deploymentId = data.result.rows[0].cells.find(
-    //             (c) => c.name === "internalid"
-    //         )?.value;
-    //
-    //         console.log(
-    //             `📊 Deployment ${deploymentId}: ${status} (attempt ${attempts + 1}/${maxAttempts})`
-    //         );
-    //
-    //         await new Promise((resolve) => setTimeout(resolve, intervalMs));
-    //         attempts++;
-    //     }
-    //
-    //     console.log("⏱️ Polling timed out");
-    //     return { completed: false, timeout: true };
-    // };
-    //
-    // // Usage
-    // const result = await pollScriptExecution(1307);
 };
 
 const addExecuteButton = () => {
@@ -225,6 +150,12 @@ const addExecuteButton = () => {
 // Check if we're on the correct page
 const shouldAddButton = (): boolean => {
     const url = new URL(window.location.href);
+
+    // Skip "Next" pages — N/currentRecord module doesn't exist there and
+    // RequireJS throws an uncaught scripterror that can't be caught by errback
+    if (url.pathname.startsWith("/next/")) {
+        return false;
+    }
 
     // Check if path matches
     const isScriptPage = url.pathname.includes("/app/common/scripting/script.nl");

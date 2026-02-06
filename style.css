@@ -172,6 +172,24 @@ layer(base);
 [data-slot="dialog-content"] {
     --oj-link-text-color: var(--foreground);
     --oj-link-text-color-visited: var(--foreground);
+    --oj-heading-text-color: var(--foreground);
+}
+
+/* Override NetSuite heading styles (jetstyles.css targets h1-h6 directly) */
+[data-slot="dialog-content"] h1,
+[data-slot="dialog-content"] h2,
+[data-slot="dialog-content"] h3,
+[data-slot="dialog-content"] h4,
+[data-slot="dialog-content"] h5,
+[data-slot="dialog-content"] h6 {
+    font-size: unset !important;
+    font-weight: unset !important;
+    line-height: unset !important;
+    margin-top: unset !important;
+    margin-bottom: unset !important;
+    color: unset !important;
+    font-style: unset !important;
+    padding: unset !important;
 }
 
 /* Override NetSuite form input styles */

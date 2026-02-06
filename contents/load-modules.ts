@@ -50,45 +50,59 @@ window.addEventListener("message", (event) => {
             return;
         }
 
-        (window as any).require([`N/${moduleName}`], (nsModule: any) => {
-            // We can't send the module directly (it won't survive serialization),
-            // but we can call methods on it and send back the results
-            // For currentRecord, we just need to call .get() and return the result
-            if (moduleName === "currentRecord" && nsModule?.get) {
-                try {
-                    const record = nsModule.get();
-                    window.postMessage(
-                        {
-                            type: "NS_MODULE_RESPONSE",
-                            requestId,
-                            result: {
-                                id: record?.id,
-                                type: record?.type,
+        (window as any).require(
+            [`N/${moduleName}`],
+            (nsModule: any) => {
+                // We can't send the module directly (it won't survive serialization),
+                // but we can call methods on it and send back the results
+                // For currentRecord, we just need to call .get() and return the result
+                if (moduleName === "currentRecord" && nsModule?.get) {
+                    try {
+                        const record = nsModule.get();
+                        window.postMessage(
+                            {
+                                type: "NS_MODULE_RESPONSE",
+                                requestId,
+                                result: {
+                                    id: record?.id,
+                                    type: record?.type,
+                                },
                             },
-                        },
-                        "*"
-                    );
-                } catch (e) {
+                            "*"
+                        );
+                    } catch (e) {
+                        window.postMessage(
+                            {
+                                type: "NS_MODULE_RESPONSE",
+                                requestId,
+                                error: e instanceof Error ? e.message : String(e),
+                            },
+                            "*"
+                        );
+                    }
+                } else {
                     window.postMessage(
                         {
                             type: "NS_MODULE_RESPONSE",
                             requestId,
-                            error: e instanceof Error ? e.message : String(e),
+                            error: `Module ${moduleName} not supported for cross-world messaging`,
                         },
                         "*"
                     );
                 }
-            } else {
+            },
+            (err: Error) => {
+                console.warn(`[load-modules] Failed to load N/${moduleName}:`, err);
                 window.postMessage(
                     {
                         type: "NS_MODULE_RESPONSE",
                         requestId,
-                        error: `Module ${moduleName} not supported for cross-world messaging`,
+                        error: `Failed to load N/${moduleName}: ${err?.message || err}`,
                     },
                     "*"
                 );
             }
-        });
+        );
     } catch (e) {
         window.postMessage(
             {

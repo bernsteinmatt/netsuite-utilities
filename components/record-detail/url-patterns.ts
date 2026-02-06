@@ -150,6 +150,47 @@ export const RECORD_TYPE_TO_TABLE: Record<string, string> = {
     revRecTemplate: "amortizationtemplate",
 };
 
+/**
+ * Convert a NetSuite "Next" URL slug to a record type identifier.
+ *
+ * Examples:
+ *   "journal-entry"   -> "journalEntry"
+ *   "sales-order"     -> "salesOrder"
+ *   "cru-nact-task"   -> "customrecord_nact_task"  (custom record with cru- prefix)
+ *   "customer"        -> "customer"
+ */
+export const slugToRecordType = (slug: string): string => {
+    // Custom records: strip "cru-" prefix, replace hyphens with underscores, add "customrecord_" prefix
+    if (slug.startsWith("cru-")) {
+        const withoutPrefix = slug.slice(4);
+        return `customrecord_${withoutPrefix.replace(/-/g, "_")}`;
+    }
+
+    // Standard records: convert kebab-case to camelCase
+    return slug.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+};
+
+/**
+ * Parse a "Next" URL (/next/<slug>/<id>) to extract the record type slug and numeric ID.
+ * Returns null if the URL doesn't match the expected pattern.
+ */
+export const parseNextUrl = (): { slug: string; recordType: string; id: string } | null => {
+    const segments = window.location.pathname.split("/").filter(Boolean);
+
+    if (segments[0] !== "next" || segments.length < 3) {
+        return null;
+    }
+
+    const slug = segments[segments.length - 2];
+    const id = segments[segments.length - 1];
+
+    if (!/^\d+$/.test(id)) {
+        return null;
+    }
+
+    return { slug, recordType: slugToRecordType(slug), id };
+};
+
 export const URL_PATTERNS: UrlPatternDefinition[] = [
     // Custom record TYPE definition page (not an instance, but the type itself)
     // URL: /app/common/custom/custrecord.nl?id=841 (no rectype param = it's the type definition)

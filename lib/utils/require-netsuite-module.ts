@@ -7,17 +7,28 @@
  */
 export const requireNetSuiteModule = <T = unknown>(module: string): Promise<T> => {
     return new Promise((resolve, reject) => {
-        const win = window as Window & { require?: (deps: string[], cb: (m: T) => void) => void };
+        const win = window as Window & {
+            require?: (deps: string[], cb: (m: T) => void, errback?: (err: Error) => void) => void;
+        };
 
         if (typeof win.require !== "function") {
+            console.warn(
+                `[requireNetSuiteModule] window.require not available, cannot load N/${module}`
+            );
             reject(new Error("NetSuite require function not available"));
             return;
         }
 
         try {
-            win.require([`N/${module}`], (nsModule: T) => {
-                resolve(nsModule);
-            });
+            win.require(
+                [`N/${module}`],
+                (nsModule: T) => {
+                    resolve(nsModule);
+                },
+                (err: Error) => {
+                    reject(err);
+                }
+            );
         } catch (e) {
             reject(e instanceof Error ? e : new Error(String(e)));
         }

@@ -18,6 +18,7 @@ import { SupportLinks } from "~components/ui/support-links";
 import { mergeReducer } from "~lib/merge-reducer";
 
 import { JsonNode } from "./json-node";
+import { RestRecordDetail } from "./rest-record-detail";
 import { SuiteQLRecordDetail } from "./suiteql-record-detail";
 
 interface RecordDetailProps {
@@ -245,9 +246,7 @@ const fetchRecordData = async (): Promise<{
         }
 
         const parsed = parseXmlToJson(xmlText);
-        console.log("Parsed XML to JSON:", parsed);
         const formatted = formatRecord(parsed);
-        console.log("Formatted record:", formatted);
 
         if (!formatted) {
             return { data: null, error: "Could not parse record data" };
@@ -262,7 +261,7 @@ const fetchRecordData = async (): Promise<{
     }
 };
 
-type DataSource = "xml" | "suiteql";
+type DataSource = "xml" | "suiteql" | "rest";
 
 interface RecordDetailState extends Record<string, unknown> {
     dataSource: DataSource;
@@ -270,14 +269,19 @@ interface RecordDetailState extends Record<string, unknown> {
     showEmptyFields: boolean;
 }
 
-const initialState: RecordDetailState = {
-    dataSource: "xml",
-    searchTerm: "",
-    showEmptyFields: false, // XML defaults to hiding empty
+const isNextPage = () => window.location.pathname.startsWith("/next/");
+
+const getInitialState = (): RecordDetailState => {
+    const isNext = isNextPage();
+    return {
+        dataSource: isNext ? "rest" : "xml",
+        searchTerm: "",
+        showEmptyFields: isNext, // REST/SuiteQL shows empty by default
+    };
 };
 
 export const RecordDetail = ({ setIsOpen }: RecordDetailProps) => {
-    const [state, dispatch] = useReducer(mergeReducer<RecordDetailState>, initialState);
+    const [state, dispatch] = useReducer(mergeReducer<RecordDetailState>, null, getInitialState);
     const { dataSource, searchTerm, showEmptyFields } = state;
 
     const [record, setRecord] = useState<ParsedRecord | null>(null);
@@ -285,8 +289,8 @@ export const RecordDetail = ({ setIsOpen }: RecordDetailProps) => {
     const [error, setError] = useState<string | null>(null);
 
     const handleDataSourceChange = useCallback((value: DataSource) => {
-        // SuiteQL shows empty by default, XML hides empty by default
-        dispatch({ dataSource: value, showEmptyFields: value === "suiteql" });
+        // REST/SuiteQL shows empty by default, XML hides empty by default
+        dispatch({ dataSource: value, showEmptyFields: value !== "xml" });
     }, []);
 
     const loadRecord = useCallback(async () => {
@@ -354,32 +358,29 @@ export const RecordDetail = ({ setIsOpen }: RecordDetailProps) => {
         id: string | null;
     } | null>(null);
     const [suiteqlRecord, setSuiteqlRecord] = useState<Record<string, unknown> | null>(null);
+    const [restRecordInfo, setRestRecordInfo] = useState<{
+        recordType: string | null;
+        id: string | null;
+    } | null>(null);
+    const [restRecord, setRestRecord] = useState<Record<string, unknown> | null>(null);
 
     const expandAll = useCallback(() => setForceExpanded(true), []);
     const collapseAll = useCallback(() => setForceExpanded(false), []);
 
-    const handleSuiteqlRecordInfoChange = useCallback(
-        (info: { recordType: string | null; id: string | null }) => {
-            setSuiteqlRecordInfo(info);
-        },
-        []
-    );
-
-    const handleSuiteqlRecordChange = useCallback(
-        (record: Record<string, unknown> | null) => {
-            setSuiteqlRecord(record);
-        },
-        []
-    );
-
-    const recordsCatalogUrl =
+    const activeRecordInfo =
         dataSource === "xml"
-            ? record?.recordType
-                ? `https://system.netsuite.com/app/recordscatalog/rcbrowser.nl?whence=#/record_ss/${record.recordType}`
+            ? record
+                ? { recordType: record.recordType, id: record.id }
                 : null
-            : suiteqlRecordInfo?.recordType
-              ? `https://system.netsuite.com/app/recordscatalog/rcbrowser.nl?whence=#/record_ss/${suiteqlRecordInfo.recordType}`
-              : null;
+            : dataSource === "rest"
+              ? restRecordInfo
+              : suiteqlRecordInfo;
+
+    const recordsCatalogUrl = activeRecordInfo?.recordType
+        ? `https://system.netsuite.com/app/recordscatalog/rcbrowser.nl?whence=#/record_ss/${activeRecordInfo.recordType}`
+        : null;
+
+    const isNext = isNextPage();
 
     return (
         <div className="plasmo:text-foreground!">
@@ -389,26 +390,19 @@ export const RecordDetail = ({ setIsOpen }: RecordDetailProps) => {
                         <div className="plasmo:flex plasmo:items-center plasmo:justify-between">
                             <DialogTitle className="plasmo:flex plasmo:items-center plasmo:gap-2">
                                 Record Detail
-                                <Select
-                                    value={dataSource}
-                                    onValueChange={handleDataSourceChange}
-                                >
+                                <Select value={dataSource} onValueChange={handleDataSourceChange}>
                                     <SelectTrigger className="plasmo:w-auto plasmo:h-7 plasmo:text-xs plasmo:font-normal">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="plasmo:z-1003">
-                                        <SelectItem value="xml">XML</SelectItem>
+                                        {!isNext && <SelectItem value="xml">XML</SelectItem>}
+                                        <SelectItem value="rest">REST</SelectItem>
                                         <SelectItem value="suiteql">SuiteQL</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                {dataSource === "xml" && record && (
+                                {activeRecordInfo && (
                                     <span className="plasmo:text-muted-foreground plasmo:text-sm plasmo:font-normal">
-                                        {record.recordType} #{record.id}
-                                    </span>
-                                )}
-                                {dataSource === "suiteql" && suiteqlRecordInfo && (
-                                    <span className="plasmo:text-muted-foreground plasmo:text-sm plasmo:font-normal">
-                                        {suiteqlRecordInfo.recordType} #{suiteqlRecordInfo.id}
+                                        {activeRecordInfo.recordType} #{activeRecordInfo.id}
                                     </span>
                                 )}
                             </DialogTitle>
@@ -462,9 +456,13 @@ export const RecordDetail = ({ setIsOpen }: RecordDetailProps) => {
                                             ? filteredRecord
                                                 ? JSON.stringify(filteredRecord, null, 2)
                                                 : ""
-                                            : suiteqlRecord
-                                              ? JSON.stringify(suiteqlRecord, null, 2)
-                                              : ""
+                                            : dataSource === "rest"
+                                              ? restRecord
+                                                  ? JSON.stringify(restRecord, null, 2)
+                                                  : ""
+                                              : suiteqlRecord
+                                                ? JSON.stringify(suiteqlRecord, null, 2)
+                                                : ""
                                     }
                                     title="Copy JSON to clipboard"
                                 />
@@ -538,13 +536,25 @@ export const RecordDetail = ({ setIsOpen }: RecordDetailProps) => {
                             </>
                         )}
 
+                        {dataSource === "rest" && (
+                            <RestRecordDetail
+                                searchTerm={searchTerm}
+                                forceExpanded={forceExpanded}
+                                showEmptyFields={showEmptyFields}
+                                xmlRecordType={record?.recordType}
+                                xmlRecordId={record?.id}
+                                onRecordInfoChange={setRestRecordInfo}
+                                onRecordChange={setRestRecord}
+                            />
+                        )}
+
                         {dataSource === "suiteql" && (
                             <SuiteQLRecordDetail
                                 searchTerm={searchTerm}
                                 forceExpanded={forceExpanded}
                                 showEmptyFields={showEmptyFields}
-                                onRecordInfoChange={handleSuiteqlRecordInfoChange}
-                                onRecordChange={handleSuiteqlRecordChange}
+                                onRecordInfoChange={setSuiteqlRecordInfo}
+                                onRecordChange={setSuiteqlRecord}
                             />
                         )}
                     </div>

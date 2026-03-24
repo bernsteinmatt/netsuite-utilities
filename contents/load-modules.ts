@@ -5,6 +5,36 @@ export const config: PlasmoCSConfig = {
     world: "MAIN",
 };
 
+// Load just the current record and assign to window.currentRec
+window.addEventListener("message", (event) => {
+    if (event.source !== window || event.data?.type !== "LOAD_CURRENT_RECORD") {
+        return;
+    }
+
+    try {
+        if (typeof (window as any).require === "function") {
+            (window as any).require(["N/currentRecord"], function (currentRecordModule: any) {
+                const record = currentRecordModule.get();
+                if (!record || !record.id) {
+                    console.warn("NetSuite Utilities: No current record found on this page.");
+                    return;
+                }
+                (window as any).currentRec = record;
+                console.log(
+                    `NetSuite Utilities: Current record loaded — ${record.type} (ID: ${record.id})`
+                );
+                console.log("NetSuite Utilities: Available as window.currentRec");
+            });
+        } else {
+            const m = "NetSuite require function not found. Are you on a NetSuite page?";
+            console.error(m);
+            alert(m);
+        }
+    } catch (e) {
+        console.error("Error loading current record: ", e);
+    }
+});
+
 // Listen for messages from the extension
 window.addEventListener("LOAD_NS_MODULES", () => {
     try {

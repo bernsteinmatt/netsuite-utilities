@@ -142,6 +142,9 @@ export const NetsuiteUtilities = ({
                     setActiveView("command-search");
                 } else if (message.action === "OPEN_RECORD_DETAIL") {
                     setActiveView("record-detail");
+                } else if (message.action === "LOAD_CURRENT_RECORD") {
+                    window.postMessage({ type: "LOAD_CURRENT_RECORD" }, "*");
+                    sendResponse({ success: true });
                 } else if (message.action === "LOAD_CONSOLE_MODULES") {
                     window.dispatchEvent(new CustomEvent("LOAD_NS_MODULES"));
                     sendResponse({ success: true });

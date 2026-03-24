@@ -7,6 +7,7 @@ import {
     ArrowLeft,
     Database,
     FileCode2,
+    FileInput,
     Package,
     ScrollText,
     Search,
@@ -94,6 +95,14 @@ const PopupContent = () => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const tab = tabs[0];
             chrome.tabs.sendMessage(tab.id, { action: "LOAD_CONSOLE_MODULES" });
+            window.close();
+        });
+    };
+
+    const handleLoadCurrentRecord = () => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            const tab = tabs[0];
+            chrome.tabs.sendMessage(tab.id, { action: "LOAD_CURRENT_RECORD" });
             window.close();
         });
     };
@@ -195,6 +204,12 @@ const PopupContent = () => {
                         <button onClick={handleOpenRecordDetail} className={mainItemClassName}>
                             <FileCode2 size={18} />
                             <span>View Record Detail</span>
+                        </button>
+                    )}
+                    {loadConsoleModulesEnabled && (
+                        <button onClick={handleLoadCurrentRecord} className={mainItemClassName}>
+                            <FileInput size={18} />
+                            <span>Load Current Record</span>
                         </button>
                     )}
                     {loadConsoleModulesEnabled && (

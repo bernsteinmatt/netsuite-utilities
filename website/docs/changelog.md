@@ -10,6 +10,13 @@ All notable changes to NetSuite Utilities will be documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.7] - 2026-03-24
+
+### Added
+
+- **Script Log Viewer**: Copy and download buttons to export all visible logs as plain text
+- **Load Current Record**: New popup button to load just `N/currentRecord` into the console as `window.currentRec` without loading all SuiteScript modules
+
 ## [0.0.6] - 2026-02-06
 
 ### Added

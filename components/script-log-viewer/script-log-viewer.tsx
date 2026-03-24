@@ -145,7 +145,7 @@ const buildScriptLogQuery = (
     }
 
     const tzOffset = formatHourOffset(offsetInHours);
-    const sql = `SELECT scriptNote.internalid AS id, TO_CHAR(scriptNote.date, 'YYYY-MM-DD HH24:MI:SS') || '${tzOffset}' AS date, scriptNote.title, scriptNote.detail, scriptNote.type, script.name as script_name, script.id as script_id FROM scriptNote INNER JOIN script ON scriptNote.scripttype = script.id ${where.length ? `WHERE ${where.join(" AND ")}` : ""} ORDER BY scriptNote.date DESC`;
+    const sql = `SELECT scriptNote.internalid AS id, TO_CHAR(scriptNote.date, 'YYYY-MM-DD HH24:MI:SS') || '${tzOffset}' AS date, scriptNote.title, scriptNote.detail, scriptNote.type, script.name as script_name, script.id as script_id FROM scriptNote INNER JOIN script ON scriptNote.scripttype = script.id ${where.length ? `WHERE ${where.join(" AND ")}` : ""} ORDER BY scriptNote.internalid DESC`;
 
     return sql;
 };

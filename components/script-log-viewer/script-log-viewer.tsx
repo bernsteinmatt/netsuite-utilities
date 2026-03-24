@@ -5,8 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
+    Check,
     ChevronsDownUp,
     ChevronsUpDown,
+    Copy,
+    Download,
     FileText,
     Filter,
     Moon,
@@ -53,6 +56,19 @@ interface Filters {
     fromDate: number | null;
     toDate: number | null;
 }
+
+const formatLogsAsText = (logs: LogEntry[]): string => {
+    return logs
+        .map((log) => {
+            const header = `[${log.type}] ${log.date}${log.script_name ? ` | ${log.script_name}` : ""}`;
+            const lines = [header, `Title: ${log.title}`];
+            if (log.detail) {
+                lines.push(`Detail:\n  ${log.detail.replace(/\n/g, "\n  ")}`);
+            }
+            return lines.join("\n");
+        })
+        .join("\n");
+};
 
 const MOCK_QUERY_DELAY_MS = 350;
 
@@ -265,6 +281,30 @@ export const ScriptLogViewer = ({ setIsOpen, isSidePanel = false }: ScriptLogVie
         return stored?.defaultExpanded ?? false;
     });
     const [expandKey, setExpandKey] = useState(0); // Used to force re-render of LogRow components
+    const [copied, setCopied] = useState(false);
+
+    const handleCopyAll = useCallback(async () => {
+        if (logs.length === 0) return;
+        try {
+            await navigator.clipboard.writeText(formatLogsAsText(logs));
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+        } catch (err) {
+            console.error("Failed to copy logs:", err);
+        }
+    }, [logs]);
+
+    const handleDownload = useCallback(() => {
+        if (logs.length === 0) return;
+        const text = formatLogsAsText(logs);
+        const blob = new Blob([text], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `script-logs-${Date.now()}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }, [logs]);
 
     // Save filters and preferences when they change
     useEffect(() => {
@@ -640,6 +680,32 @@ export const ScriptLogViewer = ({ setIsOpen, isSidePanel = false }: ScriptLogVie
                     </Button>
                 </div>
                 <div className="plasmo:flex plasmo:items-center plasmo:gap-1 plasmo:lg:gap-2">
+                    <Button
+                        variant="outline"
+                        size={buttonSize}
+                        onClick={handleCopyAll}
+                        disabled={logs.length === 0}
+                        className="plasmo:cursor-pointer"
+                        title="Copy All"
+                    >
+                        {copied ? (
+                            <Check className="plasmo:size-4 plasmo:text-green-500" />
+                        ) : (
+                            <Copy className="plasmo:size-4" />
+                        )}
+                        <span className="plasmo:hidden plasmo:lg:inline plasmo:ml-1">Copy</span>
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size={buttonSize}
+                        onClick={handleDownload}
+                        disabled={logs.length === 0}
+                        className="plasmo:cursor-pointer"
+                        title="Download"
+                    >
+                        <Download className="plasmo:size-4" />
+                        <span className="plasmo:hidden plasmo:lg:inline plasmo:ml-1">Download</span>
+                    </Button>
                     <Button
                         variant="outline"
                         size={buttonSize}
